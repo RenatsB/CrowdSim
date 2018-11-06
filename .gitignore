@@ -1,0 +1,5 @@
+crowdLib/*.o
+crowdLib/.qmake.stash
+crowdLib/CrowdLib.pro.user
+crowdLib/MakeFile
+crowdLib/lib*

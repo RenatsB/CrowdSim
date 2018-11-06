@@ -1,106 +1,86 @@
-#ifndef VEC2_H_
-#define VEC2_H_
-class Vec2
+#ifndef COLOUR_H_
+#define COLOUR_H_
+class Colour
 {
 public:
 //-----------------------------------------------------------------------------------------------------
 /// @brief Default constructor.
 //-----------------------------------------------------------------------------------------------------
-Vec2()=default;
+Colour():
+    r(1.f),
+    g(1.f),
+    b(1.f),
+    a(1.f)
+{}
 //-----------------------------------------------------------------------------------------------------
 /// @brief Single parameter constructor.
 //-----------------------------------------------------------------------------------------------------
-Vec2(const float _f):
-    x(_f),
-    y(_f)
+Colour(const float _f):
+    r(_f),
+    g(_f),
+    b(_f),
+    a(1.f)
 {}
 //-----------------------------------------------------------------------------------------------------
-/// @brief Double parameter constructor.
+/// @brief Quadruple parameter constructor.
 //-----------------------------------------------------------------------------------------------------
-Vec2(const float _x, const float _y):
-    x(_x),
-    y(_y)
+Colour(const float _r, const float _g, const float _b, const float _a):
+    r(_r),
+    g(_g),
+    b(_b),
+    a(_a)
 {}
 //-----------------------------------------------------------------------------------------------------
 /// @brief Default destructor.
 //-----------------------------------------------------------------------------------------------------
-~Vec2()=default;
+~Colour()=default;
 //-----------------------------------------------------------------------------------------------------
 /// @brief Default copy assignment operator.
 //-----------------------------------------------------------------------------------------------------
-Vec2(const Vec2&) = default;
+Colour(const Colour&) = default;
 //-----------------------------------------------------------------------------------------------------
 /// @brief Default copy assignment operator.
 //-----------------------------------------------------------------------------------------------------
-Vec2& operator=(const Vec2&) = default;
+Colour& operator=(const Colour&) = default;
 //-----------------------------------------------------------------------------------------------------
 /// @brief Default move assignment operator.
 //-----------------------------------------------------------------------------------------------------
-Vec2& operator=(Vec2&&) = default;
+Colour& operator=(Colour&&) = default;
 //-----------------------------------------------------------------------------------------------------
 /// @brief Default move constructor.
 //-----------------------------------------------------------------------------------------------------
-Vec2(Vec2&&) = default;
+Colour(Colour&&) = default;
 //-----------------------------------------------------------------------------------------------------
 /// @brief Addition operator.
 //-----------------------------------------------------------------------------------------------------
-Vec2 operator+(const Vec2& rhs){return Vec2(this->x+=rhs.x, this->y+=rhs.y);}
+Colour operator+(const Colour& rhs){return Colour(this->r+=rhs.r, this->g+=rhs.g, this->b+=rhs.b, this->a+=rhs.a);}
 //-----------------------------------------------------------------------------------------------------
 /// @brief Addition operator.
 //-----------------------------------------------------------------------------------------------------
-Vec2 operator+=(const Vec2& rhs){return Vec2(this->x+=rhs.x, this->y+=rhs.y);}
+Colour operator+=(const Colour& rhs){return Colour(this->r+=rhs.r, this->g+=rhs.g, this->b+=rhs.b, this->a+=rhs.a);}
 //-----------------------------------------------------------------------------------------------------
 /// @brief Subtraction operator.
 //-----------------------------------------------------------------------------------------------------
-Vec2 operator-(const Vec2& rhs){return Vec2(this->x-=rhs.x, this->y-=rhs.y);}
+Colour operator-(const Colour& rhs){return Colour(this->r-=rhs.r, this->g-=rhs.g, this->b-=rhs.b, this->a-=rhs.a);}
 //-----------------------------------------------------------------------------------------------------
 /// @brief Subtraction operator.
 //-----------------------------------------------------------------------------------------------------
-Vec2 operator-=(const Vec2& rhs){return Vec2(this->x-=rhs.x, this->y-=rhs.y);}
+Colour operator-=(const Colour& rhs){return Colour(this->r-=rhs.r, this->g-=rhs.g, this->b-=rhs.b, this->a-=rhs.a);}
 //-----------------------------------------------------------------------------------------------------
-/// @brief Multiplication operator.
+/// @brief Red component of this vector. Single letter name for visually easy access in code
 //-----------------------------------------------------------------------------------------------------
-Vec2 operator*(const float& rhs){return Vec2(this->x*=rhs, this->y*=rhs);}
+float r;
 //-----------------------------------------------------------------------------------------------------
-/// @brief Multiplication operator.
+/// @brief Green component of this vector. Single letter name for visually easy access in code
 //-----------------------------------------------------------------------------------------------------
-Vec2 operator*=(const float& rhs){return Vec2(this->x*=rhs, this->y*=rhs);}
+float g;
 //-----------------------------------------------------------------------------------------------------
-/// @brief Calculate distance between this and _tgt
-/// @param _tgt target position
+/// @brief Blue component of this vector. Single letter name for visually easy access in code
 //-----------------------------------------------------------------------------------------------------
-float distance (const Vec2 *_tgt);
+float b;
 //-----------------------------------------------------------------------------------------------------
-/// @brief Calculate distance between a and b
-/// @param _a start point
-/// @param _b end point
+/// @brief Alpha component of this vector. Single letter name for visually easy access in code
 //-----------------------------------------------------------------------------------------------------
-float distance(Vec2 *_a, Vec2 *_b);
-//-----------------------------------------------------------------------------------------------------
-/// @brief Calculate the length of a vector
-/// @param _v reference vector
-//-----------------------------------------------------------------------------------------------------
-float magnitude(Vec2 &_v);
-//-----------------------------------------------------------------------------------------------------
-/// @brief Calculate the length of this vector
-//-----------------------------------------------------------------------------------------------------
-float magnitude();
-//-----------------------------------------------------------------------------------------------------
-/// @brief Normalize a vector
-/// @param _v reference vector
-//-----------------------------------------------------------------------------------------------------
-void normalize(Vec2 *_v);
-//-----------------------------------------------------------------------------------------------------
-/// @brief Normalize this vector
-//-----------------------------------------------------------------------------------------------------
-void normalize();
-//-----------------------------------------------------------------------------------------------------
-/// @brief X component of this vector. Single letter name for visually easy access in code
-//-----------------------------------------------------------------------------------------------------
-float x;
-//-----------------------------------------------------------------------------------------------------
-/// @brief Y component of this vector. Single letter name for visually easy access in code
-//-----------------------------------------------------------------------------------------------------
-float y;
+float a;
 };
-#endif //VEC2_H_
+#endif //COLOUR_H_
