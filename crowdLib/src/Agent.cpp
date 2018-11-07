@@ -56,7 +56,7 @@ void Agent::makeDecision()
         if(dodont(m_Params->frenzy_chance))
         {
             m_state = AgentState::ATTACKFRENZY;
-            pickRandomTgt();
+            pickRandomAgent();
         }
     }
 
@@ -79,22 +79,148 @@ void Agent::getHit(float _power)
     //the more instable the Agent is, the less sensitive it will be
     m_health-=_power*m_mentalStability; //take damage
     if(m_health<=0)
-    {m_actionTgt = m_pos; flee();}
+    {m_fleeOrigin = m_pos; m_state = AgentState::FLEE; flee();}
     else
     {m_speed = m_initialValues.at(7)*m_health;}
 }
 void Agent::receiveFail()
 {
-    m_actionTgt = m_pos; flee();
+    m_fleeOrigin = m_pos;
+    m_state = AgentState::FLEE;
+    flee();
 }
 
-void Agent::punch(std::shared_ptr<Agent> _tgt)
+void Agent::fail()
 {
-    _tgt->getHit(m_power*m_aggressiveness+m_power*m_desire*m_resolve*m_desperation);
+    m_state = AgentState::FAILED;
+}
+
+void Agent::punch()
+{
+    if(m_attackTgt != nullptr)
+    {
+        if(m_pos.distance(m_attackTgt->m_pos) <= m_influenceRadius*2.f)
+        {
+            if(m_Params->punch_powerDraw <= m_power)
+            {
+                m_attackTgt->getHit(m_power*m_aggressiveness+m_power*m_desire*m_resolve*m_desperation);
+                m_power -= m_Params->punch_powerDraw;
+            }
+            else
+            {
+                if(m_state == AgentState::ATTACKFRENZY)
+                {
+                    m_state = AgentState::IDLE;
+                }
+            }
+        }
+    }
+    else
+    {
+        pickRandomAgent();
+        punch();
+    }
+}
+
+void Agent::frenzy()
+{
+    if(m_tgt == nullptr)
+    {
+        pickRandomAgent();
+    }
+    else
+    {
+        if(m_attackTgt->getHealth() <= m_Params->frenzy_stopHPtriggerLvl)
+        {
+            if(!dodont(m_Params->frenzy_stopChance))
+            {
+                punch();
+            }
+            else
+            {
+
+            }
+        }
+    }
 }
 
 void Agent::charge()
 {
-    m_speed = m_initialValues.at(7)*m_health + m_initialValues.at(7)*m_health*0.5f*(m_aggressiveness+m_desire+m_desperation);
-    m_lookVector = m_actionTgt-m_pos;
+    if(m_tgt == nullptr)
+    {
+        pickRandomProduct();
+        if(m_tgt == nullptr)
+        {
+            m_state = AgentState::FLEE;
+            flee();
+        }
+        else
+        {
+            charge();
+        }
+    }
+    else
+    {
+        if(m_power < m_Params->charge_powerDraw)
+        {
+            m_state = AgentState::FOLLOW;
+            follow();
+        }
+        else
+        {
+            m_speed = m_initialValues.at(7)*m_health + m_initialValues.at(7)*m_health*0.5f*(m_aggressiveness+m_desire+m_desperation);
+            m_lookVector = m_tgt.get()->m_pos-m_pos;
+            float tgtDist = m_lookVector.magnitude();
+            m_lookVector.normalize();
+            float coefficient = 1.f;
+            float minDist = m_influenceRadius*m_Params->charge_brakeInflRadiusCoefficient;
+            if(tgtDist <= minDist)
+            {
+                if(tgtDist<=m_influenceRadius*1.1f)
+                {
+                    m_state = AgentState::EXIT;
+                    takeProduct(m_tgt);
+                    exit();
+                }
+                coefficient = tgtDist/minDist;
+            }
+            navigate();
+            m_pos += m_lookVector*coefficient*m_speed*m_power*m_aggressiveness;
+            m_power -= m_Params->charge_powerDraw;
+        }
+    }
+}
+
+void Agent::flee()
+{
+    m_speed = m_initialValues.at(7)*m_health + m_initialValues.at(7)*(m_health/m_initialValues.at(6));
+    pickRandomExit();
+    //m_lookVector =
+    navigate();
+    m_pos += m_lookVector*m_speed*m_power*m_aggressiveness;
+}
+
+void Agent::follow()
+{
+    if(m_tgt == nullptr)
+    {
+        pickRandomProduct();
+        if(m_tgt == nullptr)
+        {
+            m_state = AgentState::FLEE;
+            flee();
+        }
+        else
+        {
+            follow();
+        }
+    }
+    else
+    {
+        m_speed = m_initialValues.at(7)*(m_health/m_initialValues.at(6))
+                 +m_initialValues.at(7)*(m_desire+m_desperation
+                 +m_resolve*m_aggressiveness)*(m_health/m_initialValues.at(6));
+
+
+    }
 }

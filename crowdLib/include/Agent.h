@@ -5,6 +5,8 @@
 #include <memory>
 #include "Time.h"
 #include "Params.h"
+#include "Product.h"
+
 class Agent: private Object
 {
 public:
@@ -13,15 +15,21 @@ void setPosition(const Vec2 _pos);
 void makeDecision();
 void getHit(float _power);
 void receiveFail();
+float getHealth() const;
 void update();
 private:
 void frenzy();
-void pickRandomTgt();
-void punch(std::shared_ptr<Agent> _tgt);
+void pickRandomProduct();
+void pickRandomAgent();
+void pickRandomExit();
+void pickRandomEntrance();
+void takeProduct(std::shared_ptr<Product> _tgt);
+void punch();
 void charge();
 void follow();
 void giveup();
 void flee();
+void navigate();
 void exit();
 void finish();
 void fail();
@@ -53,8 +61,9 @@ float m_weight;
 //-----------------------------------------------------------------------------------------------------
 float m_influenceRadius;
 Vec2 m_lookVector;
-Vec2 m_actionTgt;
-std::shared_ptr<Object> m_tgt;
+Vec2 m_fleeOrigin;
+std::shared_ptr<Product> m_tgt;
+std::shared_ptr<Agent> m_attackTgt;
 std::shared_ptr<Time> m_Time;
 std::shared_ptr<Params> m_Params;
 };

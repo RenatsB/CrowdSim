@@ -6,6 +6,11 @@ float Vec2::distance(const Vec2 *_tgt)
     Vec2 a = *this-*_tgt;
     return Vec2::magnitude(a);
 }
+float Vec2::distance(const Vec2 &_tgt)
+{
+    Vec2 a = *this-_tgt;
+    return Vec2::magnitude(a);
+}
 //-----------------------------------------------------------------------------------------------------
 float Vec2::distance(Vec2 *_a, Vec2 *_b)
 {

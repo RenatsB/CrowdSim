@@ -7,6 +7,9 @@
 class Object
 {
 public:
+Object()=default;
+~Object()=default;
+
 Tag m_tag;
 std::string m_name;
 Colour m_colour;

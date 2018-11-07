@@ -71,6 +71,11 @@ Vec2 operator*=(const float& rhs){return Vec2(this->x*=rhs, this->y*=rhs);}
 //-----------------------------------------------------------------------------------------------------
 float distance (const Vec2 *_tgt);
 //-----------------------------------------------------------------------------------------------------
+/// @brief Calculate distance between this and _tgt
+/// @param _tgt target position
+//-----------------------------------------------------------------------------------------------------
+float distance (const Vec2 &_tgt);
+//-----------------------------------------------------------------------------------------------------
 /// @brief Calculate distance between a and b
 /// @param _a start point
 /// @param _b end point
