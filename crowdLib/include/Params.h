@@ -3,10 +3,14 @@
 class Params
 {
 public:
-
+    Params(){clampParams();}
+    ~Params()=default;
 private:
 void clampParams();
 public:
+float time_saleDuration = 180.f; //lets give it 3 minutes by default
+float time_saleStart = 7.f; //give it 7 seconds to prepare
+
 float power_minLvl = 0.3f; //makes sense to have same as punch power draw,
 //but can be smaller in case you want some agents to never punch anyone
 float power_maxLvl = 12.5f;

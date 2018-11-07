@@ -16,6 +16,8 @@ void makeDecision();
 void getHit(float _power);
 void receiveFail();
 float getHealth() const;
+float getInfluenceRadius() const;
+float getWeight() const;
 void update();
 private:
 void frenzy();
@@ -27,19 +29,18 @@ void takeProduct(std::shared_ptr<Product> _tgt);
 void punch();
 void charge();
 void follow();
-void giveup();
 void flee();
-void navigate();
+void navigate(bool _avoidCollision = false);
 void exit();
 void finish();
-void fail();
 void wait();
+void wait(float _seconds);
 bool dodont(const float _chancePercent);
-void updateInfluence();
+void updateInfluences();
 int randi(int r_low, int r_high);
 float randf(float r_low, float r_high);
 //-----------------------------------------------------------------------------------------------------
-/// @brief The state of the Agent, as defined in AgentState class
+/// @brief The state of the Agent, as defined in AgentState class (see EnumClasses.h)
 //-----------------------------------------------------------------------------------------------------
 AgentState m_state = AgentState::IDLE;
 //-----------------------------------------------------------------------------------------------------
@@ -60,8 +61,10 @@ float m_weight;
 /// @brief Since Agents will be just circles, this variable stores the radius for the circle
 //-----------------------------------------------------------------------------------------------------
 float m_influenceRadius;
+float m_timer=0.f; //used for some timed decisions
 Vec2 m_lookVector;
 Vec2 m_fleeOrigin;
+Vec2 m_navPoint;
 std::shared_ptr<Product> m_tgt;
 std::shared_ptr<Agent> m_attackTgt;
 std::shared_ptr<Time> m_Time;
