@@ -21,8 +21,10 @@ The simulation, if the stress and inter-agent fighting is removed, or changed to
 
 ---
 
-####References:
+#### References:
 
 * http://dspace.bilkent.edu.tr/bitstream/handle/11693/15146/0005000.pdf?sequence=1&isAllowed=y
 
 * https://www.sciencedirect.com/science/article/pii/S096669231200213X
+
+* https://github.com/jobtalle/QuadSpace/blob/master/C%2B%2B/quadSpace.cpp
