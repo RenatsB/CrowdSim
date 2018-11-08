@@ -20,7 +20,8 @@ enum class Tag
     PURCHAED,
     WALL,
     ENTRANCE,
-    EXIT
+    EXIT,
+    TWOWAY
 };
 
 #endif //ENUMCLASSES_H_

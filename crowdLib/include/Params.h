@@ -11,6 +11,13 @@ public:
 float time_saleDuration = 180.f; //lets give it 3 minutes by default
 float time_saleStart = 7.f; //give it 7 seconds to prepare
 
+float nav_queryRadius = 12.f;
+float nav_minX = -100.f;
+float nav_maxX = 100.f;
+float nav_minY = -100.f;
+float nav_maxY = 100.f;
+uint nav_gridDepth = 8;
+
 float power_minLvl = 0.3f; //makes sense to have same as punch power draw,
 //but can be smaller in case you want some agents to never punch anyone
 float power_maxLvl = 12.5f;

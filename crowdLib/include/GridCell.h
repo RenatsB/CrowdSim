@@ -8,8 +8,9 @@ public:
 std::shared_ptr<GridCell> cellAt(const uint _id);
 bool hasSubGrid() const;
 uint getCellID() const;
+void setCellID(const uint _id);
 private:
 uint m_cellID;
 std::array<std::unique_ptr<GridCell>,4> m_subGrid;
-}
+};
 #endif //GRIDCELL_H_

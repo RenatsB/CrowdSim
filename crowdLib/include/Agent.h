@@ -1,11 +1,11 @@
 #ifndef AGENT_H_
 #define AGENT_H_
-#include "Object.h"
 #include "EnumClasses.h"
 #include <memory>
 #include "Time.h"
 #include "Params.h"
-#include "Product.h"
+#include "Shop.h"
+#include "Grid.h"
 
 class Agent: private Object
 {
@@ -19,6 +19,7 @@ float getHealth() const;
 float getInfluenceRadius() const;
 float getWeight() const;
 void update();
+void setCell(std::shared_ptr<GridCell>);
 private:
 void frenzy();
 void pickRandomProduct();
@@ -65,9 +66,11 @@ float m_timer=0.f; //used for some timed decisions
 Vec2 m_lookVector;
 Vec2 m_fleeOrigin;
 Vec2 m_navPoint;
+std::shared_ptr<Shop> m_shop;
 std::shared_ptr<Product> m_tgt;
 std::shared_ptr<Agent> m_attackTgt;
 std::shared_ptr<Time> m_Time;
 std::shared_ptr<Params> m_Params;
+std::shared_ptr<GridCell> m_parentCell;
 };
 #endif //AGENT_H_

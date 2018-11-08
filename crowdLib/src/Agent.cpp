@@ -107,7 +107,7 @@ void Agent::receiveFail()
 
 void Agent::wait()
 {
-    return; //poop
+    return;
 }
 
 void Agent::wait(float _seconds)
@@ -309,7 +309,25 @@ void Agent::updateInfluences()
                       );
 }
 
+float Agent::getInfluenceRadius() const
+{
+    return m_influenceRadius;
+}
 
+float Agent::getHealth() const
+{
+    return m_health;
+}
+
+float Agent::getWeight() const
+{
+    return m_weight;
+}
+
+void Agent::pickRandomAgent()
+{
+
+}
 
 
 
