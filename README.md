@@ -28,3 +28,5 @@ The simulation, if the stress and inter-agent fighting is removed, or changed to
 * https://www.sciencedirect.com/science/article/pii/S096669231200213X
 
 * https://github.com/jobtalle/QuadSpace/blob/master/C%2B%2B/quadSpace.cpp
+
+* https://github.com/NCCA/OctreeAbstract
