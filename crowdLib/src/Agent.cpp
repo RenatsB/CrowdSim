@@ -275,13 +275,18 @@ void Agent::updateInfluences()
         receiveFail();
         return;
     }
+    //GET REMAINING TIME STRESS
     float timeStress = 1.f-timeleft/maxTime;
-    m_desperation = m_initialValues.at(5) + m_initialValues.at(5)*timeStress;
-    m_resolve = m_initialValues.at(3) + m_initialValues.at(3)*timeStress;
+    //GET REMAINING PRODUCTS STRESS
+    float remainingProductsStress = m_shop.get()->getRemainingProductStress();
+    //GET PRODUCT DISTANCE STRESS IF TOO LITTLE LEFT
+    float distanceStress = m_shop.get()->getDistanceStress();
 
-    //ADD REMAINING PRODUCTS STRESS
+    float stress = std::max(timeStress,remainingProductsStress*distanceStress);
+    m_desperation = m_initialValues.at(5) + (m_Params.get()->desperation_maxLvl-m_initialValues.at(5))*stress;
+    m_resolve = m_initialValues.at(3) + (m_Params.get()->resolve_maxLvl-m_initialValues.at(3))*stress;
 
-    //ADD PRODUCT DISTANCE STRESS IF TOO LITTLE LEFT
+
 
     m_influenceRadius = 1.f+m_weight*((m_health/m_Params.get()->health_maxLvl)
                                       +(m_power/m_Params.get()->power_maxLvl));

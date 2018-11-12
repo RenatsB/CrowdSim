@@ -13,6 +13,9 @@ public:
     std::vector<std::shared_ptr<Wall>> getWalls() const;
     std::vector<std::shared_ptr<Object>> getExits() const;
     uint getNumRemainingProducts() const;
+    float getRemainingProductStress() const;
+    float getDistanceStress() const;
+    void update();
 private:
     std::vector<std::shared_ptr<Product>> m_products;
     std::vector<std::shared_ptr<Wall>> m_walls;

@@ -18,6 +18,12 @@ float nav_minY = -100.f;
 float nav_maxY = 100.f;
 uint nav_gridDepth = 8;
 
+uint entity_numProducts = 42;
+uint entity_numAgents = 256;
+
+uint stress_remainingProductsForDistanceCheck = 10;
+float stress_distanceToExits = 2.f;
+
 float power_minLvl = 0.3f; //makes sense to have same as punch power draw,
 //but can be smaller in case you want some agents to never punch anyone
 float power_maxLvl = 12.5f;
