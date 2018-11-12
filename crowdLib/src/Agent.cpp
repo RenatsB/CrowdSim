@@ -2,25 +2,26 @@
 #include <cstdlib>
 void Agent::initAgent(std::string _name)
 {
-    srand (time(NULL));
     m_tag = Tag::AGENT;
     m_name = _name;
-    m_aggressiveness = randf(m_Params->aggression_minLvl, m_Params->aggression_maxLvl);
-    m_desire = randf(m_Params->desire_minLvl, m_Params->desire_maxLvl);
-    m_power = randf(m_Params->power_minLvl, m_Params->power_maxLvl);
-    m_resolve = randf(m_Params->resolve_minLvl, m_Params->resolve_maxLvl);
+    m_aggressiveness = m_rand.get()->randf(m_Params->aggression_minLvl, m_Params->aggression_maxLvl);
+    m_desire = m_rand.get()->randf(m_Params->desire_minLvl, m_Params->desire_maxLvl);
+    m_power = m_rand.get()->randf(m_Params->power_minLvl, m_Params->power_maxLvl);
+    m_resolve = m_rand.get()->randf(m_Params->resolve_minLvl, m_Params->resolve_maxLvl);
     if(dodont(m_Params->stability_chance)) {m_mentalStability = 1.f;} else
-    {m_mentalStability = randf(m_Params->stability_minLvl, m_Params->stability_maxLvl);}
-    m_desperation = randf(m_Params->desire_minLvl, m_Params->desperation_maxLvl);
-    m_health = randf(m_Params->health_minLvl, m_Params->health_maxLvl);
-    m_speed = randf(m_Params->speed_minLvl, m_Params->speed_maxLvl);
+    {m_mentalStability = m_rand.get()->randf(m_Params->stability_minLvl, m_Params->stability_maxLvl);}
+    m_desperation = m_rand.get()->randf(m_Params->desire_minLvl, m_Params->desperation_maxLvl);
+    m_health = m_rand.get()->randf(m_Params->health_minLvl, m_Params->health_maxLvl);
+    m_speed = m_rand.get()->randf(m_Params->speed_minLvl, m_Params->speed_maxLvl);
     m_initialValues = std::array<float,8>{m_aggressiveness,m_desire,m_power,m_resolve,
     m_mentalStability,m_desperation,m_health,m_speed};
 }
 
-void Agent::update()
+void Agent::update(std::vector<Agent*> _neighbours)
 {
-    //first of all, update all the dynamic params
+    //first of all, update neighbours
+    m_neighbours = _neighbours;
+    //then update all the dynamic params
     updateInfluences();
     //then run the logics
     if(m_Time != nullptr)
@@ -48,20 +49,6 @@ void Agent::setPosition(const Vec2 _pos)
     m_pos = _pos;
 }
 
-int Agent::randi(int r_low, int r_high)
-{
-    double r = rand()/(1.0 + RAND_MAX);
-    int range = r_high - r_low +1;
-    int r_scaled = (r * range) + r_low;
-    return r_scaled;
-}
-
-float Agent::randf(float r_low, float r_high)
-{
-    float r = r_low + (rand()/(RAND_MAX / (r_high-r_low)));
-    return r;
-}
-
 void Agent::makeDecision()
 {
     if(m_aggressiveness >= m_Params->frenzy_minAggressionLvl
@@ -70,21 +57,21 @@ void Agent::makeDecision()
         if(dodont(m_Params->frenzy_chance))
         {
             m_state = AgentState::ATTACKFRENZY;
-            pickRandomAgent();
+            pickClosestAgent();
         }
     }
 
 }
 
-bool Agent::dodont(const float _chancePercent)
+bool Agent::dodont(const float _chanceZeroToOne)
 {
-    if(_chancePercent>=1.f)
+    if(_chanceZeroToOne>=1.f)
         return true;
-    if(_chancePercent<=0.f)
+    if(_chanceZeroToOne<=0.f)
         return false;
     //otherwise do this:
-    float value = randf(0.f, 1.f);
-    if(value<=_chancePercent){return true;}
+    float value = m_rand.get()->randf(0.f, 1.f);
+    if(value<=_chanceZeroToOne){return true;}
     else{return false;}
 }
 
@@ -138,7 +125,7 @@ void Agent::punch()
     }
     else
     {
-        pickRandomAgent();
+        pickClosestAgent();
         punch();
     }
 }
@@ -147,7 +134,7 @@ void Agent::frenzy()
 {
     if(m_tgt == nullptr)
     {
-        pickRandomAgent();
+        pickClosestAgent();
     }
     else
     {
@@ -249,7 +236,7 @@ void Agent::follow()
 
 void Agent::exit()
 {
-    if(m_tgt.get()->getOwner().get() != this)
+    if(m_tgt.get()->getOwner() != this)
     {
         m_attackTgt = m_tgt.get()->getOwner();
         punch();
@@ -273,6 +260,8 @@ void Agent::navigate(bool _avoidCollision)
     {
 
     }
+    m_pos += m_drag;
+    m_drag = Vec2(0.f,0.f);
     m_lookVector.normalize();
     m_pos += m_lookVector*m_speed*m_Time.get()->DeltaTime();
 }
@@ -309,7 +298,7 @@ void Agent::updateInfluences()
                       );
 }
 
-float Agent::getInfluenceRadius() const
+float Agent::getRadius() const
 {
     return m_influenceRadius;
 }
@@ -324,11 +313,113 @@ float Agent::getWeight() const
     return m_weight;
 }
 
-void Agent::pickRandomAgent()
+Vec2 Agent::getPosition() const
 {
-
+    return m_pos;
 }
 
+void Agent::pickRandomProduct()
+{
+    std::vector<std::shared_ptr<Product>> products;
+    std::vector<std::shared_ptr<Product>> freeProducts;
+    products = m_shop.get()->getRemainingProducts();
+    bool check = false;
+    for(auto p : products)
+    {
+        if(p.get()->getOwner() == nullptr)
+        {
+            freeProducts.push_back(p);
+            check = true;
+        }
+    }
+    if(check)
+    {
+        int randNum = m_rand.get()->randi(0,freeProducts.size(),0);
+        m_tgt = freeProducts.at(randNum);
+    }
+    else
+    {
+        int randNum = m_rand.get()->randi(0,products.size(),0);
+        m_tgt = products.at(randNum);
+    }
+}
+
+void Agent::pickClosestAgent()
+{
+    float minDist = m_Params.get()->nav_maxX+m_Params.get()->nav_maxY;
+    //reason for above assignment is that nothing goes beyond the space square,
+    //which means maximum possible distance is the length of its diagonal.
+    //for simplicity we just add X and Y values here, which summ is > than diag.
+    Agent* newTgt;
+    for(auto a : m_neighbours)
+    {
+        float dist = getPosition().distance(a->getPosition());
+        if(dist < minDist)
+        {
+            newTgt = a;
+            minDist = dist;
+        }
+    }
+    m_attackTgt = newTgt;
+}
+
+void Agent::pickClosestExit()
+{
+    float minDist = m_Params.get()->nav_maxX+m_Params.get()->nav_maxY;
+    //reason for above assignment is that nothing goes beyond the space square,
+    //which means maximum possible distance is the length of its diagonal.
+    //for simplicity we just add X and Y values here, which summ is > than diag.
+    std::shared_ptr<Object> final;
+    std::vector<std::shared_ptr<Object>> points;
+    points = m_shop.get()->getExits();
+    for(auto p : points)
+    {
+        if(p.get()->m_tag == Tag::EXIT || p.get()->m_tag == Tag::TWOWAY)
+        {
+            float dist = getPosition().distance(p.get()->m_pos);
+            if(dist < minDist)
+            {
+                final = p;
+                minDist = dist;
+            }
+        }
+    }
+    m_navPoint = final.get()->m_pos;
+}
+
+void Agent::pickRandomExit()
+{
+    std::vector<std::shared_ptr<Object>> points;
+    std::vector<std::shared_ptr<Object>> exits;
+    points = m_shop.get()->getExits();
+    for(auto p : points)
+    {
+        if(p.get()->m_tag == Tag::EXIT || p.get()->m_tag == Tag::TWOWAY)
+            exits.push_back(p);
+    }
+    int randNum = m_rand.get()->randi(0,exits.size(),0);
+    m_navPoint = exits.at(randNum).get()->m_pos;
+}
+
+void Agent::pickRandomEntrance()
+{
+    std::vector<std::shared_ptr<Object>> points;
+    std::vector<std::shared_ptr<Object>> entrances;
+    points = m_shop.get()->getExits();
+    for(auto p : points)
+    {
+        if(p.get()->m_tag == Tag::ENTRANCE || p.get()->m_tag == Tag::TWOWAY)
+            entrances.push_back(p);
+    }
+    int randNum = m_rand.get()->randi(0,entrances.size(),0);
+    m_navPoint = entrances.at(randNum).get()->m_pos;
+}
+
+void Agent::setDrag(float _x, float _y)
+{
+    m_drag.x = _x;
+    m_drag.y = _y;
+}
 
 
 

@@ -6,9 +6,9 @@ class Agent;
 class Product: public Object
 {
 public:
-void setOwner(std::shared_ptr<Agent> _new);
-std::shared_ptr<Agent> getOwner() const;
+void setOwner(Agent* _new);
+Agent* getOwner() const;
 private:
-std::shared_ptr<Agent> m_owner;
+Agent* m_owner;
 };
 #endif //PRODUCT_H_

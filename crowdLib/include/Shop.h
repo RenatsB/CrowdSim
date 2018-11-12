@@ -9,9 +9,10 @@ class Shop: private Object
 public:
     Shop()=default;
     ~Shop()=default;
-    uint getRemainingProducts() const;
+    std::vector<std::shared_ptr<Product>> getRemainingProducts() const;
     std::vector<std::shared_ptr<Wall>> getWalls() const;
     std::vector<std::shared_ptr<Object>> getExits() const;
+    uint getNumRemainingProducts() const;
 private:
     std::vector<std::shared_ptr<Product>> m_products;
     std::vector<std::shared_ptr<Wall>> m_walls;

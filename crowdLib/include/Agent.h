@@ -5,25 +5,27 @@
 #include "Time.h"
 #include "Params.h"
 #include "Shop.h"
-#include "Grid.h"
+#include "RandF.h"
 
 class Agent: private Object
 {
 public:
 void initAgent(std::string _name);
 void setPosition(const Vec2 _pos);
+void setDrag(float _x, float _y);
 void makeDecision();
 void getHit(float _power);
 void receiveFail();
 float getHealth() const;
-float getInfluenceRadius() const;
 float getWeight() const;
-void update();
-void setCell(std::shared_ptr<GridCell>);
+float getRadius() const;
+Vec2 getPosition() const;
+void update(std::vector<Agent*> _neighbours);
 private:
 void frenzy();
 void pickRandomProduct();
-void pickRandomAgent();
+void pickClosestAgent();
+void pickClosestExit();
 void pickRandomExit();
 void pickRandomEntrance();
 void takeProduct(std::shared_ptr<Product> _tgt);
@@ -36,10 +38,8 @@ void exit();
 void finish();
 void wait();
 void wait(float _seconds);
-bool dodont(const float _chancePercent);
+bool dodont(const float _chanceZeroToOne);
 void updateInfluences();
-int randi(int r_low, int r_high);
-float randf(float r_low, float r_high);
 //-----------------------------------------------------------------------------------------------------
 /// @brief The state of the Agent, as defined in AgentState class (see EnumClasses.h)
 //-----------------------------------------------------------------------------------------------------
@@ -66,11 +66,13 @@ float m_timer=0.f; //used for some timed decisions
 Vec2 m_lookVector;
 Vec2 m_fleeOrigin;
 Vec2 m_navPoint;
+Vec2 m_drag;
 std::shared_ptr<Shop> m_shop;
 std::shared_ptr<Product> m_tgt;
-std::shared_ptr<Agent> m_attackTgt;
+Agent* m_attackTgt;
 std::shared_ptr<Time> m_Time;
 std::shared_ptr<Params> m_Params;
-std::shared_ptr<GridCell> m_parentCell;
+std::shared_ptr<RandF> m_rand;
+std::vector<Agent*> m_neighbours;
 };
 #endif //AGENT_H_
