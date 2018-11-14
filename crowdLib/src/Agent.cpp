@@ -51,16 +51,44 @@ void Agent::setPosition(const Vec2 _pos)
 
 void Agent::makeDecision()
 {
-    if(m_aggressiveness >= m_Params->frenzy_minAggressionLvl
-            || m_mentalStability <= m_Params->frenzy_maxStabilityLvl)
+    if(m_desire <= m_Params.get()->givup_desireLvl)
     {
-        if(dodont(m_Params->frenzy_chance))
+        if(dodont(m_Params.get()->giveup_chance))
         {
-            m_state = AgentState::ATTACKFRENZY;
-            pickClosestAgent();
+            m_state = AgentState::FLEE;
         }
     }
-
+    else
+    {
+        if(m_aggressiveness >= m_Params->frenzy_minAggressionLvl
+                || m_mentalStability <= m_Params->frenzy_maxStabilityLvl)
+        {
+            if(dodont(m_Params->frenzy_chance))
+            {
+                m_state = AgentState::ATTACKFRENZY;
+                pickClosestAgent();
+            }
+            else
+            {
+                m_state = AgentState::FOLLOW;
+                pickRandomProduct();
+                if(m_tgt == nullptr)
+                    m_state = AgentState::FLEE;
+            }
+        }
+        else
+        {
+            if(m_shop.get()->getNumRemainingProducts() == 0)
+            {
+                receiveFail();
+            }
+            else
+            {
+                m_state = AgentState::FOLLOW;
+                pickRandomProduct();
+            }
+        }
+    }
 }
 
 bool Agent::dodont(const float _chanceZeroToOne)
@@ -285,8 +313,6 @@ void Agent::updateInfluences()
     float stress = std::max(timeStress,remainingProductsStress*distanceStress);
     m_desperation = m_initialValues.at(5) + (m_Params.get()->desperation_maxLvl-m_initialValues.at(5))*stress;
     m_resolve = m_initialValues.at(3) + (m_Params.get()->resolve_maxLvl-m_initialValues.at(3))*stress;
-
-
 
     m_influenceRadius = 1.f+m_weight*((m_health/m_Params.get()->health_maxLvl)
                                       +(m_power/m_Params.get()->power_maxLvl));

@@ -18,6 +18,7 @@ public:
     void update();
 private:
     std::vector<std::shared_ptr<Product>> m_products;
+    std::vector<std::shared_ptr<Product>> m_remp;
     std::vector<std::shared_ptr<Wall>> m_walls;
     std::vector<std::shared_ptr<Object>> m_exits;
 };

@@ -36,6 +36,8 @@ float speed_maxLvl = 2.5f;
 float charge_brakeInflRadiusCoefficient = 3.f;
 float charge_powerDraw = 0.68f;
 float punch_powerDraw = 0.3f;
+float givup_desireLvl = 0.15f;
+float giveup_chance = 0.35f;
 
 //NOTE: all following values should be 0-1, or else they will be clamped
 float aggression_minLvl = 0.f;
