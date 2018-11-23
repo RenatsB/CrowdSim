@@ -321,6 +321,8 @@ void Agent::updateInfluences()
     //Green channel describes how mentally stable the Agent is. Rule: more desperation->less control
     //Blue channel describes the power state, affected by power of will. Rule: no will->power irrelevant
     //Alpha channel describes how much health the Agent has compared to global Max
+    //All 4 channels can be used in combination, but are intended for use as separate colours,
+    //each representing its chanel respectively, and other values set to 0
     m_colour = Colour(
                         m_aggressiveness*(m_power/m_initialValues.at(2)),
                         m_mentalStability-m_desperation,

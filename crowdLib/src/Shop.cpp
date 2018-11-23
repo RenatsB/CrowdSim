@@ -2,13 +2,14 @@
 
 std::vector<std::shared_ptr<Product>> Shop::getRemainingProducts() const
 {
-    std::vector<std::shared_ptr<Product>> rem;
+    /*std::vector<std::shared_ptr<Product>> rem;
     for(auto i : m_products)
     {
         if(i.get()->m_tag == Tag::PRODUCT)
             rem.push_back(i);
     }
-    return rem;
+    return rem;*/
+    return m_remp;
 }
 
 std::vector<std::shared_ptr<Wall>> Shop::getWalls() const
@@ -33,10 +34,37 @@ float Shop::getRemainingProductStress() const
 
 float Shop::getDistanceStress() const
 {
-
+    //since the number of exits is expected to be small, we can get away with
+    //checking against all exits. If necessary, this can be modified
+    //to use space hashing
+    float stress = 0.f;
+    for(auto ob : m_remp)
+    {
+        float minDist = 1000000.f;
+        std::shared_ptr<Object> ret;
+        for(auto ex : m_exits)
+        {
+            float d = ob.get()->m_pos.distance(ex.get()->m_pos);
+            if(d < minDist)
+            {
+                ret = ex;
+                minDist = d;
+            }
+        }
+        if(minDist <= 12.f)//should put a variable here
+        {
+            stress+=((minDist/12.f)/m_remp.size());
+        }
+    }
 }
 
 void Shop::update()
 {
-
+    std::vector<std::shared_ptr<Product>> rem;
+    for(auto i : m_products)
+    {
+        if(i.get()->m_tag == Tag::PRODUCT)
+            rem.push_back(i);
+    }
+    m_remp = rem;
 }

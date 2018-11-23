@@ -15,6 +15,7 @@ AgentQuadtree(int _height, BoundingBox _limit):
     AbstractQuadtree <Agent,Vec2> ( _height,  _limit)
 {}
 std::vector<Agent*> getNeighbours(Agent* _ref);
+TreeNode<Agent> getAgentNode(Agent* _ref);
 
 virtual void  checkCollisionOnNode(TreeNode <Agent> *node);
 };
