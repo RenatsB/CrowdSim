@@ -1,5 +1,8 @@
 #ifndef PARAMS_H_
 #define PARAMS_H_
+
+typedef unsigned int uint;
+
 class Params
 {
 public:

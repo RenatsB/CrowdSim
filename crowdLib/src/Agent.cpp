@@ -356,15 +356,10 @@ void Agent::pickRandomProduct()
     std::vector<std::shared_ptr<Product>> products;
     std::vector<std::shared_ptr<Product>> freeProducts;
     products = m_shop.get()->getRemainingProducts();
+    freeProducts = m_shop.get()->getfreeProducts();
     bool check = false;
-    for(auto p : products)
-    {
-        if(p.get()->getOwner() == nullptr)
-        {
-            freeProducts.push_back(p);
-            check = true;
-        }
-    }
+    if(freeProducts.size() == 0)
+        check = false;
     if(check)
     {
         int randNum = m_rand.get()->randi(0,freeProducts.size(),0);

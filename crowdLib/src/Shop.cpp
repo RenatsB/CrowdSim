@@ -2,13 +2,6 @@
 
 std::vector<std::shared_ptr<Product>> Shop::getRemainingProducts() const
 {
-    /*std::vector<std::shared_ptr<Product>> rem;
-    for(auto i : m_products)
-    {
-        if(i.get()->m_tag == Tag::PRODUCT)
-            rem.push_back(i);
-    }
-    return rem;*/
     return m_remp;
 }
 
@@ -17,7 +10,7 @@ std::vector<std::shared_ptr<Wall>> Shop::getWalls() const
     return m_walls;
 }
 
-std::vector<std::shared_ptr<Object>> Shop::getExits() const
+std::vector<std::shared_ptr<Object> > Shop::getExits() const
 {
     return m_exits;
 }
@@ -36,7 +29,7 @@ float Shop::getDistanceStress() const
 {
     //since the number of exits is expected to be small, we can get away with
     //checking against all exits. If necessary, this can be modified
-    //to use space hashing
+    //to use space hashing if user decides to have insanely large amounts of exits
     float stress = 0.f;
     for(auto ob : m_remp)
     {
@@ -51,11 +44,12 @@ float Shop::getDistanceStress() const
                 minDist = d;
             }
         }
-        if(minDist <= 12.f)//should put a variable here
+        if(minDist <= m_params.get()->stress_distanceToExits)
         {
-            stress+=((minDist/12.f)/m_remp.size());
+            stress+=((minDist/m_params.get()->stress_distanceToExits)/m_remp.size());
         }
     }
+    return stress;
 }
 
 void Shop::update()
@@ -67,4 +61,12 @@ void Shop::update()
             rem.push_back(i);
     }
     m_remp = rem;
+
+    std::vector<std::shared_ptr<Product>> free;
+    for(auto u : rem)
+    {
+        if(u.get()->getOwner() == nullptr)
+            free.push_back(u);
+    }
+    m_freep = free;
 }

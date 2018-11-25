@@ -6,7 +6,7 @@
 
 /// @file AgentQuadTree.h
 /// @brief Modified from ParticleOctree.h from https://github.com/NCCA/OctreeAbstract
-/// @author Renats Bikmajevs, modified from: Xiaosong Yang modifed by Jon Macey
+/// @author Renats Bikmajevs, adapted from: Xiaosong Yang modifed by Jon Macey
 
 class AgentQuadtree: public AbstractQuadtree <Agent,Vec2>
 {

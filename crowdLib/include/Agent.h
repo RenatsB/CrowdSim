@@ -40,6 +40,7 @@ void wait();
 void wait(float _seconds);
 bool dodont(const float _chanceZeroToOne);
 void updateInfluences();
+void checkCollisions();
 //-----------------------------------------------------------------------------------------------------
 /// @brief The state of the Agent, as defined in AgentState class (see EnumClasses.h)
 //-----------------------------------------------------------------------------------------------------
