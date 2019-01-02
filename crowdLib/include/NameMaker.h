@@ -15,12 +15,12 @@ std::array<std::string,40> m_names = {"John","Ryan","Kate","Lucy","Eric","Josh",
                                    "Greg","Jennifer","Craig","Daniel","Courtney","Bella",
                                    "Max","Jack","Lacey","Duncan","Derek","Megan","Rose",
                                    "Jon","Gregory","Lance","Mike","Barbara","Clementine"};
-std::array<std::string,40> m_snames = {"Lark","Gosling","Prince","Munro","Budd","Rammstein","Duke",
-                                     "Stanton","Minor","Beckhoff","Bennington","Digory","Larson",
-                                     "Drew","Nicholls","Gregory","Rosewell","Maxwell","Hinderson",
-                                     "Mitchell","Lex","Martin","Gillam","Longville","Daniels",
-                                     "Boatington","Gum","Jackson","Peterson","Fox","Wall",
-                                     "Frederick","Gliss","Cord","Macey","Hurtington","Lord",
-                                     "Cranburry","Jerkins","Boulleville"};
+std::array<std::string,40> m_snames = {"Stark","Baddison","Stabby","Kickers","Fle","Rammstein","Duke",
+                                     "Rock","Minor","Tortures","Buyers","Jumpy","WoopWoop",
+                                     "Baddison","Quantum","Kicksass","Rosewell","Abductor","Punchers",
+                                     "Rammers","Buddies","Breakdown","Mental","Longrun","Giggles",
+                                     "Insaneman","Metal","Brute","Poachey","Stableson","Saneman",
+                                     "Greasey","Afraid","Runaway","Macey","Magnificent","Claw",
+                                     "Cuntington","Jerkins","Crusher"};
 };
 #endif //NAMEMAKER_H_

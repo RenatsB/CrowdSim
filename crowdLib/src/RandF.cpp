@@ -6,7 +6,7 @@ int RandF::randi(int r_low, int r_high, uint _t)
     {
         case 0:
         {
-            return randi(r_low, r_high);
+            return SimpleRandI(r_low, r_high);
         }
         default:
         {
@@ -21,7 +21,7 @@ float RandF::randf(float r_low, float r_high, uint _t)
     {
         case 0:
         {
-            return randf(r_low, r_high);
+            return SimpleRandF(r_low, r_high);
         }
         default:
         {

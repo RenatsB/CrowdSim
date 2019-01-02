@@ -1,9 +1,9 @@
-#ifndef AGENTGRID_H_
-#define AGENTGRID_H_
+#ifndef WORLDGRID_H_
+#define WORLDGRID_H_
 #include <vector>
 #include <memory>
 #include "Agent.h"
-/// @file AgentGrid.h
+/// @file WorldGrid.h
 /// @brief Modified from AbstractOctree.h from https://github.com/NCCA/OctreeAbstract
 /// @author Renats Bikmajevs, modified from: Xiaosong Yang modifed by Jon Macey
 
@@ -31,10 +31,10 @@ public:
     std::vector<Agent *> m_agentList;
 };
 
-class AgentGrid
+class WorldGrid
 {
 public:
-    AgentGrid(uint _gDimX, uint _gDimY)
+    WorldGrid(uint _gDimX, uint _gDimY)
     {
       if(_gDimX>0 && _gDimY>0)
       {
@@ -49,7 +49,7 @@ public:
     }
 
     /// @brief destructor
-    ~AgentGrid()
+    ~WorldGrid()
     {
         for(auto c : m_cells)
         {
@@ -60,15 +60,15 @@ public:
 
     void initGrid()
     {
-        m_cellDimX = (m_limit.m_maxx - m_limit.m_minx)/m_cellNum;
-        m_cellDimY = (m_limit.m_maxy - m_limit.m_miny)/m_cellNum;
+        //m_cellDimX = (m_limit.m_maxx - m_limit.m_minx)/m_cellNum;
+        //m_cellDimY = (m_limit.m_maxy - m_limit.m_miny)/m_cellNum;
         for(int c=0; c<m_cells.size(); ++c)
         {
           m_cells[c] = new GridCell*;
-          m_cells[c]->m_limit.m_minx = m_limit.m_minx + m_cellDimX*(c%m_cellNum);
-          m_cells[c]->m_limit.m_maxx = m_limit.m_maxx + m_cellDimX*(c%m_cellNum +1);
-          m_cells[c]->m_limit.m_miny = m_limit.m_miny + m_cellDimY*(c/m_cellNum);
-          m_cells[c]->m_limit.m_maxy = m_limit.m_maxy + m_cellDimY*(c/m_cellNum +1);
+          m_cells[c]->m_limit.m_minx = m_limit.m_minx + m_cellDimX*(c%m_gridDimensionX);
+          m_cells[c]->m_limit.m_maxx = m_limit.m_maxx + m_cellDimX*(c%m_gridDimensionX +1);
+          m_cells[c]->m_limit.m_miny = m_limit.m_miny + m_cellDimY*(c/m_gridDimensionX);
+          m_cells[c]->m_limit.m_maxy = m_limit.m_maxy + m_cellDimY*(c/m_gridDimensionX +1);
         }
     }
 
@@ -144,19 +144,44 @@ public:
 private:
     void checkBB()
     {
+        if(m_limit.m_maxx<m_limit.m_minx)
+        {
+            int temp = m_limit.m_maxx;
+            m_limit.m_maxx = m_limit.m_minx;
+            m_limit.m_minx = temp;
+        }
+        if(m_limit.m_maxy<m_limit.m_miny)
+        {
+            int temp = m_limit.m_maxy;
+            m_limit.m_maxy = m_limit.m_miny;
+            m_limit.m_miny = temp;
+        }
+
+        m_cellDimX = (m_limit.m_maxx - m_limit.m_minx)/m_gridDimensionX;
+        m_cellDimY = (m_limit.m_maxy - m_limit.m_miny)/m_gridDimensionY;
+
+        if(m_limit.m_maxx==m_limit.m_minx)
+        {
+            m_limit.m_maxx = 1;
+            m_limit.m_minx = -1;
+            m_gridDimensionX = 1;
+            m_cellDimX = 1;
+        }
+        if(m_limit.m_maxy==m_limit.m_miny)
+        {
+            m_limit.m_maxy = 1;
+            m_limit.m_miny = -1;
+            m_gridDimensionY = 1;
+            m_cellDimY = 1;
+        }
         float A = (float)(m_limit.m_maxx - m_limit.m_minx)%(float)m_cellDimX;
-        while(A != 0)
-        {
-            //get 1 or -1 depending on the max bounds and subtract to reduce the limit
-            _lim.m_maxx-=(m_limit.m_maxx > 0) ? 1 : ((m_limit.m_maxx < 0) ? -1 : 0);
-            A = (float)(m_limit.m_maxx - m_limit.m_minx)%(float)m_cellDimX;
-        }
+        //get 1 or -1 depending on the max bounds and subtract to reduce the limit
+        m_limit.m_maxx-=A*((m_limit.m_maxx > 0) ? 0.5 : ((m_limit.m_maxx < 0) ? -0.5 : 0));
+        m_limit.m_minx+=A*((m_limit.m_minx > 0) ? 0.5 : ((m_limit.m_minx < 0) ? -0.5 : 0));
+        //A = (float)(m_limit.m_maxx - m_limit.m_minx)%(float)m_cellDimX;
         float B = (float)(m_limit.m_maxy - m_limit.m_miny)%(float)m_cellDimY;
-        while(B != 0)
-        {
-            _lim.m_maxy-=(m_limit.m_maxy > 0) ? 1 : ((m_limit.m_maxy < 0) ? -1 : 0);
-            B = (float)(m_limit.m_maxy - m_limit.m_miny)%(float)m_cellDimY;
-        }
+        m_limit.m_maxy-=A*((m_limit.m_maxy > 0) ? 0.5 : ((m_limit.m_maxy < 0) ? -0.5 : 0));
+        m_limit.m_miny+=A*((m_limit.m_miny > 0) ? 0.5 : ((m_limit.m_miny < 0) ? -0.5 : 0));
     }
 
     void checkCollisionOnNode(GridCell* _cell)
@@ -172,5 +197,5 @@ private:
     std::vector<GridCell*> m_cells;
 };
 
-#endif //AGENTGRID_H_
+#endif //WORLDGRID_H_
 

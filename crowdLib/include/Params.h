@@ -14,12 +14,20 @@ public:
 float time_saleDuration = 180.f; //lets give it 3 minutes by default
 float time_saleStart = 7.f; //give it 7 seconds to prepare
 
+uint physics_gridSizeX = 21;
+uint physics_gridSizeY = 21;
+
 float nav_queryRadius = 12.f;
 float nav_minX = -100.f;
 float nav_maxX = 100.f;
 float nav_minY = -100.f;
 float nav_maxY = 100.f;
-uint nav_gridDepth = 8;
+uint nav_gridSizeX = 32;
+uint nav_gridSizeY = 32;
+uint nav_maxRoomDim = 20;
+uint nav_maxNumExits = 3;
+uint nav_maxNumEntrances = 3;
+uint nav_maxNumInouts = 2;
 
 uint entity_numProducts = 42;
 uint entity_numAgents = 256;
