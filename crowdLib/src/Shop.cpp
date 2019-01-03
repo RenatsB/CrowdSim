@@ -1,18 +1,30 @@
 #include "Shop.h"
 
+void Shop::setExits(std::vector<Vec2> _ex)
+{
+    m_exits.clear();
+    m_exits = _ex;
+}
+
+std::vector<Vec2> Shop::getExits() const
+{
+    return m_exits;
+}
+
+void Shop::setEntrances(std::vector<Vec2> _entr)
+{
+    m_entrs.clear();
+    m_entrs = _entr;
+}
+
+std::vector<Vec2> Shop::getEntrances() const
+{
+    return m_entrs;
+}
+
 std::vector<std::shared_ptr<Product>> Shop::getRemainingProducts() const
 {
     return m_remp;
-}
-
-std::vector<std::shared_ptr<Wall>> Shop::getWalls() const
-{
-    return m_walls;
-}
-
-std::vector<std::shared_ptr<Object> > Shop::getExits() const
-{
-    return m_exits;
 }
 
 uint Shop::getNumRemainingProducts() const

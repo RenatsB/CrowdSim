@@ -417,30 +417,16 @@ void Agent::pickClosestExit()
 
 void Agent::pickRandomExit()
 {
-    std::vector<std::shared_ptr<Object>> points;
-    std::vector<std::shared_ptr<Object>> exits;
-    points = m_shop.get()->getExits();
-    for(auto p : points)
-    {
-        if(p.get()->m_tag == Tag::EXIT || p.get()->m_tag == Tag::TWOWAY)
-            exits.push_back(p);
-    }
+    std::vector<Vec2> exits = m_shop.get()->getExits();
     int randNum = m_rand.get()->randi(0,exits.size(),0);
-    m_navPoint = exits.at(randNum).get()->m_pos;
+    m_navPoint = exits.at(randNum);
 }
 
 void Agent::pickRandomEntrance()
 {
-    std::vector<std::shared_ptr<Object>> points;
-    std::vector<std::shared_ptr<Object>> entrances;
-    points = m_shop.get()->getExits();
-    for(auto p : points)
-    {
-        if(p.get()->m_tag == Tag::ENTRANCE || p.get()->m_tag == Tag::TWOWAY)
-            entrances.push_back(p);
-    }
+    std::vector<Vec2> entrances = m_shop.get()->getEntrances();
     int randNum = m_rand.get()->randi(0,entrances.size(),0);
-    m_navPoint = entrances.at(randNum).get()->m_pos;
+    m_navPoint = entrances.at(randNum);
 }
 
 void Agent::setDrag(float _x, float _y)
