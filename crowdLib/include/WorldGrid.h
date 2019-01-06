@@ -5,8 +5,8 @@
 #include "Agent.h"
 #include "Shop.h"
 /// @file WorldGrid.h
-/// @brief Modified from AbstractOctree.h from https://github.com/NCCA/OctreeAbstract
-/// @author Renats Bikmajevs, modified from: Xiaosong Yang modifed by Jon Macey
+/// @brief Space separation and object management module
+/// @author Renats Bikmajevs
 
 
 ///  _______
@@ -29,6 +29,7 @@ class GridCell
 {
 public:
     BoundingBox m_limit;
+    Vec2 m_position;
     std::vector<Agent *> m_agentList;
     uint m_value = 0;
 };
@@ -55,6 +56,7 @@ public:
     ~WorldGrid();
 
     uint getAt(Vec2 _cell);
+    GridCell* cellAt(Vec2 _cell);
     void update();
     void addObject(Agent *_a);
 
@@ -70,10 +72,10 @@ private:
     int checkGrid(Vec2 _pos);
     /// @brief clear off all the agents from the grid
     void clearGrid();
-    uint randomToExit;
-    std::vector<uint> randPathToExit;
-    uint randomToEntrance;
-    std::vector<uint> randPathToEntrance;
+    uint randomToExit(uint _current) const;
+    std::vector<uint> randPathToExit(uint _current) const;
+    uint randomToEntrance(uint _current) const;
+    std::vector<uint> randPathToEntrance(uint _current) const;
     void checkCollisionOnNode(GridCell* _cell);
 private:
     RandF* m_randF;
@@ -85,9 +87,11 @@ private:
     uint m_gridSizeY = 1;
     BoundingBox m_limit;
     std::vector<GridCell*> m_cells;
+    std::vector<Vec2> m_exits;
     //these 2 paths will take most of the space, so store and calculate them here
-    std::vector<std::vector<uint>> m_exitPaths;
-    std::vector<std::vector<uint>> m_enterPaths;
+    //path are stored for each cell
+    std::vector<std::vector<std::vector<uint>>> m_exitPaths;
+    std::vector<std::vector<std::vector<uint>>> m_enterPaths;
 };
 
 #endif //WORLDGRID_H_

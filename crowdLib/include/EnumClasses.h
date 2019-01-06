@@ -18,7 +18,6 @@ enum class Tag
     AGENT,
     PRODUCT,
     PURCHAED,
-    WALL,
     ENTRANCE,
     EXIT,
     TWOWAY

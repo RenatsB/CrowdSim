@@ -15,6 +15,12 @@ This is a perfect situation for chaotic but yet directed crowd movement. Each ag
 
 ---
 
+### Possible usage and applications
+
+This system can be used for psychology and behaviour research, statistical analysis - all in scope of Black Friday situation or similar. The tool provides a set of controls to tailor the crowd to a certain requirement. It provides not complete, but a wide selection of personality parameters and a few basic controls for generation of the simulation area.
+
+---
+
 ### Possible extensions
 
 The simulation, if the stress and inter-agent fighting is removed, or changed to a value in a magnetic field, can be extended to simulate a ferromagnetic liquid. In this case, the *"product"* will become a **magnet**, and each agent will become a single particle of the ferromagnetic substance. This can be then used to render the resulting shape.

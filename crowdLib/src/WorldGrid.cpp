@@ -63,80 +63,176 @@ void WorldGrid::initMap()
     for(uint u=0; u<m_values.size(); ++u)
         m_values.at(u) = 0;
 
-    uint roomSize = m_randf->randi(16, m_params->nav_maxRoomDim,0);
-
-    //make walls
-    for(uint y=sizeY/2-roomSize/2; y<sizeY/2+roomSize/2; ++y)
+    if(m_params->nav_maxRoomDim>0)
     {
-        setAt(sizeX/2-roomSize/2,y,1); //  set  |    |
-        setAt(sizeX/2+roomSize/2,y,1); //       |    |
-    }
-    for(uint x=sizeX/2-roomSize/2; x<sizeX/2-roomSize/2; ++x)
-    {
-        setAt(x,sizeX/2+roomSize/2,1); //  set  ------
-        setAt(x,sizeX/2+roomSize/2,1); //       ------
-    }
+        uint roomSize = m_randf->randi(16, m_params->nav_maxRoomDim,0);
 
-    //make holes
-    uint numExits = m_randf->randi(0, m_params->nav_maxNumExits,0);
-    uint numEntrances = m_randf->randi(0, m_params->nav_maxNumEntrances,0);
-    uint numInouts = m_randf->randi(1, m_params->nav_maxNumInouts,0);
-    std::vector<Vec2> takenXY;
-    for(uint i=0; i<(numExits+numEntrances+numInouts); ++i)
-    {
-        Vec2 p;
-        int k = m_randf->randi(0, 4, 0);
-
-
-        bool chk = false;
-        do
+        //make walls
+        for(uint y=m_gridSizeY/2-roomSize/2; y<m_gridSizeY/2+roomSize/2; ++y)
         {
-            chk = false;
-            //this creates XY pairs:
-            /// rand - 0
-            /// rand - 1
-            /// o - rand
-            /// 1 - rand
-            /// in other words, picks horizontal walls or vertical
-            /// and attempts to make hole
-            p.x = k%2;
-            p.y = k%2;
-            if(k>1)
-            {
-                p.y=m_randf->randi(1,roomSize-1);
-            }
-            else
-            {
-                p.x=m_randf->randi(1,roomSize-1);
-            }
+            setAt(m_gridSizeX/2-roomSize/2,y,1); //  set  |    |
+            setAt(m_gridSizeX/2+roomSize/2,y,1); //       |    |
+        }
+        for(uint x=m_gridSizeX/2-roomSize/2; x<m_gridSizeX/2-roomSize/2; ++x)
+        {
+            setAt(x,m_gridSizeY/2+roomSize/2,1); //  set  ------
+            setAt(x,m_gridSizeY/2+roomSize/2,1); //       ------
+        }
 
-            for(auto g : takenXY)
+        //make holes
+        uint numExits = m_randf->randi(0, m_params->nav_maxNumExits,0);
+        uint numEntrances = m_randf->randi(0, m_params->nav_maxNumEntrances,0);
+        uint numInouts = m_randf->randi(1, m_params->nav_maxNumInouts,0);
+        uint exitSize = (uint)(sqrt(roomSize)/2);
+        std::vector<Vec2> takenXY;
+        for(uint i=0; i<(numExits+numEntrances+numInouts); ++i)
+        {
+            Vec2 p;
+            std::vector<Vec2> p2;
+            int k = m_randf->randi(0, 4, 0);
+
+
+            bool chk = false;
+            do
             {
-                if(g == p)
+                chk = false;
+                //this creates XY pairs:
+                /// rand - 0
+                /// rand - 1
+                /// o - rand
+                /// 1 - rand
+                /// in other words, picks horizontal walls or vertical
+                /// and attempts to make a hole
+                p.x = k%2;
+                p.y = k%2;
+                if(k>1)
                 {
-                    chk = true;
+                    p.y=m_randf->randi(1,roomSize-1);
+                    //if exit size > 1, need to check if current point is at corners,
+                    //if so, instead of setting points at both its sides, just
+                    //set points at one of the sides
+                    if(p.y >= roomSize-1-exitSize/2 || p.y <= 1+exitSize/2)
+                    {
+                        for(uint e=1; e<exitSize-1; ++e)
+                        {
+                            Vec2 a;
+                            if(p.y <= 1+exitSize/2)
+                            {
+                                a=Vec2(p.x, p.y+e);
+                            }
+                            else
+                            {
+                                a=Vec2(p.x, p.y-e);
+                            }
+                            p2.push_back(a);
+                        }
+                    }
+                    else
+                    {
+                        //if not close to a corner, then just fill expand the hole
+                        //in both directions
+                        Vec2 b;
+                        b.x=p.x;
+                        for(uint e1=1; e1<(exitSize-1)/2; ++e1)
+                        {
+                            b.y=p.y+e1;
+                            p2.push_back(b);
+                            b.y=p.y-e1;
+                            p2.push_back(b);
+                        }
+
+                    }
+                }
+                else
+                {
+                    p.x=m_randf->randi(1,roomSize-1);
+                    //if exit size > 1, need to check if current point is at corners,
+                    //if so, instead of setting points at both its sides, just
+                    //set points at one of the sides
+                    if(p.x >= roomSize-1-exitSize/2 || p.x <= 1+exitSize/2)
+                    {
+                        for(uint e=1; e<exitSize-1; ++e)
+                        {
+                            Vec2 a;
+                            if(p.x <= 1+exitSize/2)
+                            {
+                                a=Vec2(p.x+e, p.y);
+                            }
+                            else
+                            {
+                                a=Vec2(p.x-e, p.y);
+                            }
+                            p2.push_back(a);
+                        }
+                    }
+                    else
+                    {
+                        //if not close to a corner, then just fill expand the hole
+                        //in both directions
+                        Vec2 b;
+                        b.y=p.y;
+                        for(uint e1=1; e1<(exitSize-1)/2; ++e1)
+                        {
+                            b.x=p.x+e1;
+                            p2.push_back(b);
+                            b.x=p.x-e1;
+                            p2.push_back(b);
+                        }
+
+                    }
+                }
+
+                for(auto g : takenXY)
+                {
+                    if(g == p)
+                    {
+                        chk = true;
+                    }
+                    for(auto pos : p2)
+                    {
+                        if(g == pos)
+                        {
+                            chk = true;
+                        }
+                    }
                 }
             }
-        }
-        while(chk);
+            while(chk);
 
-        takenXY.push_back(p);
-        if(i<numExits)
-        {
-            setAt(p, 3);
-        }
-        else
-        {
-            if(i<(numExits+numEntrances))
+            takenXY.push_back(p);
+            takenXY.emplace_back(p2);
+            if(i<numExits)
             {
-                setAt(p, 2);
+                setAt(p, 3);
+                for(auto _p : p2)
+                {
+                    setAt(_p, 3);
+                }
             }
             else
             {
-                setAt(p, 4);
+                if(i<(numExits+numEntrances))
+                {
+                    setAt(p, 2);
+                    for(auto _p : p2)
+                    {
+                        setAt(_p, 2);
+                    }
+                }
+                else
+                {
+                    setAt(p, 4);
+                    for(auto _p : p2)
+                    {
+                        setAt(_p, 4);
+                    }
+                }
             }
+            m_exits.push_back(p);
+            m_exits.emplace_back(p2);
         }
     }
+
 }
 
 void WorldGrid::calcPaths()
@@ -145,7 +241,56 @@ void WorldGrid::calcPaths()
     m_enterPaths = DijkstraComputePaths(false);
 }
 
-std::vector<std::vector<uint>> WorldGrid::DijkstraComputePaths(bool _type);
+std::vector<std::vector<uint>> WorldGrid::DijkstraComputePaths(bool _type)
+{
+    std::vector<std::vector<uint>> ret;
+    if(_type) //this is exits
+    {
+        //for exits we only search inside the room
+        for(uint y=m_gridSizeY/2-roomSize/2+1; y<m_gridSizeY/2-roomSize/2-1; ++y)
+        {
+            for(uint x=m_gridSizeX/2-roomSize/2+1; x<m_gridSizeX/2-roomSize/2-1; ++x)
+            {
+                for(auto e : m_exits)
+                {
+
+                }
+            }
+        }
+    }
+    else //this is entrances
+    {
+        //for entrances we search whole grid
+        //layout with room should be:
+        /// ************
+        /// ***      ***
+        /// ***      ***
+        /// ***      ***
+        /// ************
+        for(uint y=0; y<m_gridSizeY; ++y)
+        {
+            if(y < m_gridSizeY/2-roomSize/2 || y > m_gridSizeY/2+roomSize/2)
+            {
+                for(uint x=0; x<m_gridSizeX; ++x)
+                {
+
+                }
+            }
+            else
+            {
+                for(uint xl=0; xl<m_gridSizeX/2-roomSize/2; ++xl)
+                {
+
+                }
+                for(uint xr=m_gridSizeX/2+roomSize/2; xr<m_gridSizeX; ++xr)
+                {
+
+                }
+            }
+        }
+    }
+    return ret;
+}
 
 void WorldGrid::setAt(Vec2 _cell, uint _v)
 {
@@ -247,10 +392,31 @@ void WorldGrid::clearGrid()
         c->m_agentList.clear();
 }
 
-uint WorldGrid::randomToExit;
-std::vector<uint> WorldGrid::randPathToExit;
-uint WorldGrid::randomToEntrance;
-std::vector<uint> WorldGrid::randPathToEntrance;
+uint WorldGrid::randomToExit(uint _current) const
+{
+    uint a = m_randF->randi(0,m_exitPaths.at(_current).size(),0);
+    uint b = m_randF->randi(0,m_exitPaths.at(_current).at(a).size(),0);
+    return m_exitPaths.at(a).at(b);
+}
+
+std::vector<uint> WorldGrid::randPathToExit(uint _current) const
+{
+    uint a = m_randF->randi(0,m_exitPaths.at(_current).size(),0);
+    return m_exitPaths.at(_current).at(a);
+}
+
+uint WorldGrid::randomToEntrance(uint _current) const
+{
+    uint a = m_randF->randi(0,m_enterPaths.at(_current).size(),0);
+    uint b = m_randF->randi(0,m_enterPaths.at(_current).at(a).size(),0);
+    return m_enterPaths.at(a).at(b);
+}
+
+std::vector<uint> WorldGrid::randPathToEntrance(uint _current) const
+{
+    uint a = m_randF->randi(0,m_enterPaths.at(_current).size(),0);
+    return m_enterPaths.at(_current).at(a);
+}
 
 void WorldGrid::checkCollisionOnNode(GridCell* _cell)
 {
