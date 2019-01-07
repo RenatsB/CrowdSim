@@ -44,8 +44,6 @@ void clampParams()
     if(entity_numAgents<1)
         entity_numAgents=1;
 
-    if(stress_remainingProductsForDistanceCheck<0)
-        stress_remainingProductsForDistanceCheck=0;
     if(stress_distanceToExits<0)
         stress_distanceToExits=0;
 

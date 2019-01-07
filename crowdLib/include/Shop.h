@@ -3,18 +3,19 @@
 #include <vector>
 #include <memory>
 #include "Product.h"
+#include "Params.h"
 
 class Shop: private Object
 {
 public:
-    Shop()=default;
+    Shop(std::shared_ptr<Params> _prms):
+        m_params(_prms)
+    {}
     ~Shop()=default;
     std::vector<std::shared_ptr<Product>> getRemainingProducts() const;
     std::vector<std::shared_ptr<Product>> getfreeProducts() const;
     void setExits(std::vector<Vec2> _ex);
-    void setEntrances(std::vector<Vec2> _entr);
     std::vector<Vec2> getExits() const;
-    std::vector<Vec2> getEntrances() const;
     uint getNumRemainingProducts() const;
     float getRemainingProductStress() const;
     float getDistanceStress() const;
@@ -24,6 +25,6 @@ private:
     std::vector<std::shared_ptr<Product>> m_remp;
     std::vector<std::shared_ptr<Product>> m_freep;
     std::vector<Vec2> m_exits;
-    std::vector<Vec2> m_entrs;
+    std::shared_ptr<Params> m_params;
 };
 #endif //SHOP_H_

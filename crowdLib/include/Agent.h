@@ -6,12 +6,14 @@
 #include "Params.h"
 #include "Shop.h"
 #include "RandF.h"
+class WorldGrid;
 
 class Agent: private Object
 {
 public:
-void initAgent(std::string _name);
+void initAgent(std::string _name, WorldGrid* _w);
 void setPosition(const Vec2 _pos);
+void setCell(uint _id);
 void setDrag(float _x, float _y);
 void makeDecision();
 void getHit(float _power);
@@ -25,16 +27,18 @@ private:
 void frenzy();
 void pickRandomProduct();
 void pickClosestAgent();
-void pickClosestExit();
-void pickRandomExit();
-void pickRandomEntrance();
+void pickRandomPtoExit();
+void pickRandomPtoEntrance();
+void pickRandomCellToExit();
+void pickRandomCellToEntrance();
 void takeProduct(std::shared_ptr<Product> _tgt);
 void punch();
 void charge();
 void follow();
 void flee();
-void navigate(bool _avoidCollision = false);
-void exit();
+void navigate(bool _customDir = false);
+void enter();
+void exit(bool _carryProduct);
 void finish();
 void wait();
 void wait(float _seconds);
@@ -67,7 +71,10 @@ float m_timer=0.f; //used for some timed decisions
 Vec2 m_lookVector;
 Vec2 m_fleeOrigin;
 Vec2 m_navPoint;
+std::vector<uint> m_navPath;
+uint m_cellID =0;
 Vec2 m_drag;
+WorldGrid* m_grid;
 std::shared_ptr<Shop> m_shop;
 std::shared_ptr<Product> m_tgt;
 Agent* m_attackTgt;

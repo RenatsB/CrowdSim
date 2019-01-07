@@ -1,9 +1,12 @@
 #include "Agent.h"
 #include <cstdlib>
-void Agent::initAgent(std::string _name)
+#include "WorldGrid.h"
+
+void Agent::initAgent(std::string _name, WorldGrid *_w)
 {
     m_tag = Tag::AGENT;
     m_name = _name;
+    m_grid = _w;
     m_aggressiveness = m_rand.get()->randf(m_Params->aggression_minLvl, m_Params->aggression_maxLvl);
     m_desire = m_rand.get()->randf(m_Params->desire_minLvl, m_Params->desire_maxLvl);
     m_power = m_rand.get()->randf(m_Params->power_minLvl, m_Params->power_maxLvl);
@@ -51,11 +54,13 @@ void Agent::setPosition(const Vec2 _pos)
 
 void Agent::makeDecision()
 {
-    if(m_desire <= m_Params.get()->givup_desireLvl)
+    if(m_desire <= m_Params.get()->giveup_desireLvl)
     {
         if(dodont(m_Params.get()->giveup_chance))
         {
             m_state = AgentState::FLEE;
+            m_navPath.clear();
+            m_navPath = pickRandomPtoExit();
         }
     }
     else
@@ -117,6 +122,8 @@ void Agent::receiveFail()
 {
     m_fleeOrigin = m_pos;
     m_state = AgentState::FLEE;
+    m_navPath.clear();
+    m_navPath = pickRandomPtoExit();
     flee();
 }
 
@@ -189,7 +196,7 @@ void Agent::charge()
         if(m_tgt == nullptr)
         {
             m_state = AgentState::FLEE;
-            pickRandomExit();
+            pickRandomPtoExit();
             wait(4.f);
         }
         else
@@ -224,7 +231,7 @@ void Agent::charge()
                      +m_initialValues.at(7)*(m_health/m_initialValues.at(6))
                      *0.5f*(m_aggressiveness+m_desire+m_desperation))*coefficient;
             m_power -= m_Params->charge_powerDraw;
-            navigate(false);
+            navigate(true);
         }
     }
 }
@@ -232,8 +239,7 @@ void Agent::charge()
 void Agent::flee()
 {
     m_speed = m_initialValues.at(7)*(m_health/m_initialValues.at(6));
-    m_lookVector = m_navPoint + m_fleeOrigin - m_pos*2.f;
-    navigate(true);
+    navigate(false);
 }
 
 void Agent::follow()
@@ -244,7 +250,7 @@ void Agent::follow()
         if(m_tgt == nullptr)
         {
             m_state = AgentState::FLEE;
-            pickRandomExit();
+            pickRandomPtoExit();
             wait(1.5f);
         }
         else
@@ -257,39 +263,58 @@ void Agent::follow()
         m_speed = m_initialValues.at(7)*(m_health/m_initialValues.at(6))
                  +m_initialValues.at(7)*(m_desire+m_desperation
                  +m_resolve*m_aggressiveness)*(m_health/m_initialValues.at(6));
-        m_lookVector = m_tgt.get()->m_pos - m_pos;
         navigate(true);
     }
 }
 
-void Agent::exit()
+void Agent::exit(bool _carryProduct)
 {
-    if(m_tgt.get()->getOwner() != this)
+    if(_carryProduct)
     {
-        m_attackTgt = m_tgt.get()->getOwner();
-        punch();
-        takeProduct(m_tgt);
-        exit();
+        if(m_tgt.get()->getOwner() != this)
+        {
+            m_attackTgt = m_tgt.get()->getOwner();
+            punch();
+            takeProduct(m_tgt);
+            exit(true);
+        }
+        else
+        {
+            m_speed = m_initialValues.at(7)*(m_health/m_initialValues.at(6))
+                     +m_initialValues.at(7)*(m_desire+m_desperation
+                     +m_resolve+m_aggressiveness)*(m_health/m_initialValues.at(6));
+            navigate(false);
+            m_tgt.get()->m_pos+=m_lookVector*m_speed*m_Time.get()->DeltaTime();
+        }
     }
     else
     {
         m_speed = m_initialValues.at(7)*(m_health/m_initialValues.at(6))
                  +m_initialValues.at(7)*(m_desire+m_desperation
                  +m_resolve+m_aggressiveness)*(m_health/m_initialValues.at(6));
-        m_lookVector = m_tgt.get()->m_pos - m_pos;
-        navigate(true);
-        m_tgt.get()->m_pos+=m_lookVector*m_speed*m_Time.get()->DeltaTime();
+        navigate(false);
     }
+
 }
 
-void Agent::navigate(bool _avoidCollision)
+void Agent::navigate(bool _customDir)
 {
-    if(_avoidCollision)
+    if(_customDir)
     {
-
+        m_lookVector = m_tgt.get()->m_pos - m_pos;
     }
+    else
+    {
+        if(m_navPath.size()!=0)
+        {
+            m_navPoint = m_navPath.at(0);
+            m_navPath.erase(m_navPath.begin());
+        }
+    }
+
     m_pos += m_drag;
     m_drag = Vec2(0.f,0.f);
+    m_lookVector = m_navPoint - m_pos;
     m_lookVector.normalize();
     m_pos += m_lookVector*m_speed*m_Time.get()->DeltaTime();
 }
@@ -391,7 +416,7 @@ void Agent::pickClosestAgent()
     m_attackTgt = newTgt;
 }
 
-void Agent::pickClosestExit()
+/*void Agent::pickClosestExit()
 {
     float minDist = m_Params.get()->nav_maxX+m_Params.get()->nav_maxY;
     //reason for above assignment is that nothing goes beyond the space square,
@@ -428,6 +453,31 @@ void Agent::pickRandomEntrance()
     int randNum = m_rand.get()->randi(0,entrances.size(),0);
     m_navPoint = entrances.at(randNum);
 }
+*/
+
+void Agent::pickRandomPtoExit()
+{
+    m_navPath.clear();
+    m_navPath = m_grid->randPathToExit(m_cellID);
+}
+
+void Agent::pickRandomPtoEntrance()
+{
+    m_navPath.clear();
+    m_navPath = m_grid->randPathToEntrance(m_cellID);
+}
+
+void Agent::pickRandomCellToExit()
+{
+    m_navPath.clear();
+    m_navPath.push_back(m_grid->randomToExit(m_cellID));
+}
+
+void Agent::pickRandomCellToEntrance()
+{
+    m_navPath.clear();
+    m_navPath.push_back(m_grid->randomToEntrance(m_cellID));
+}
 
 void Agent::setDrag(float _x, float _y)
 {
@@ -435,7 +485,10 @@ void Agent::setDrag(float _x, float _y)
     m_drag.y = _y;
 }
 
-
+void Agent::setCell(uint _id)
+{
+    m_cellID = _id;
+}
 
 
 

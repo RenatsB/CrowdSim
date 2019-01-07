@@ -22,5 +22,12 @@ enum class Tag
     EXIT,
     TWOWAY
 };
+enum class Direction
+{
+    N,
+    E,
+    S,
+    W
+};
 
 #endif //ENUMCLASSES_H_

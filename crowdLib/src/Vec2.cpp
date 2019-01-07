@@ -17,6 +17,11 @@ float Vec2::distance(Vec2 *_a, Vec2 *_b)
     Vec2 a = (*_a)-(*_b);
     return Vec2::magnitude(a);
 }
+float Vec2::distance(Vec2 &_a, Vec2 &_b)
+{
+    Vec2 a = _a-_b;
+    return Vec2::magnitude(a);
+}
 //-----------------------------------------------------------------------------------------------------
 float Vec2::magnitude(Vec2 &_v)
 {

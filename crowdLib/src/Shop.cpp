@@ -11,17 +11,6 @@ std::vector<Vec2> Shop::getExits() const
     return m_exits;
 }
 
-void Shop::setEntrances(std::vector<Vec2> _entr)
-{
-    m_entrs.clear();
-    m_entrs = _entr;
-}
-
-std::vector<Vec2> Shop::getEntrances() const
-{
-    return m_entrs;
-}
-
 std::vector<std::shared_ptr<Product>> Shop::getRemainingProducts() const
 {
     return m_remp;
@@ -46,10 +35,10 @@ float Shop::getDistanceStress() const
     for(auto ob : m_remp)
     {
         float minDist = 1000000.f;
-        std::shared_ptr<Object> ret;
+        Vec2 ret;
         for(auto ex : m_exits)
         {
-            float d = ob.get()->m_pos.distance(ex.get()->m_pos);
+            float d = ob.get()->m_pos.distance(ex);
             if(d < minDist)
             {
                 ret = ex;
