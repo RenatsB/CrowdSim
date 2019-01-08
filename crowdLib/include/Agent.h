@@ -39,12 +39,12 @@ void flee();
 void navigate(bool _customDir = false);
 void enter();
 void exit(bool _carryProduct);
+void walkaway();
 void finish();
 void wait();
 void wait(float _seconds);
 bool dodont(const float _chanceZeroToOne);
 void updateInfluences();
-void checkCollisions();
 //-----------------------------------------------------------------------------------------------------
 /// @brief The state of the Agent, as defined in AgentState class (see EnumClasses.h)
 //-----------------------------------------------------------------------------------------------------

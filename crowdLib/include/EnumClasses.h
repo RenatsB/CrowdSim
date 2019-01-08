@@ -9,6 +9,8 @@ enum class AgentState
     FLEE,
     GIVEUP,
     EXIT,
+    ENTER,
+    WALKAWAY,
     DONE,
     FAILED,
     IDLE

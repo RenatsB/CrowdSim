@@ -14,28 +14,21 @@ isEqual(QT_MAJOR_VERSION, 5) {
 # where to put moc auto generated files
 MOC_DIR=moc
 # on a mac we don't create a .app bundle file ( for ease of multiplatform use)
+CONFIG += console c++17
 CONFIG-=app_bundle
 # Auto include all .cpp files in the project src directory (can specifiy individually if required)
-SOURCES+= $$PWD/src/NGLScene.cpp \
-                                        $$PWD/src/ParticleOctree.cpp \
-                                        $$PWD/src/main.cpp \
-                                        $$PWD/src/Particle.cpp \
-                                        $$PWD/src/Scene.cpp
-# same for the .h files
-HEADERS+= $$PWD/include/AbstractOctree.h \
-                                        $$PWD/include/Particle.h \
-                                        $$PWD/include/Scene.h \
-                                        $$PWD/include/NGLScene.h \
-                                        $$PWD/include/ParticleOctree.h
-# and add the include dir into the search path for Qt and make
-INCLUDEPATH +=./include
+INCLUDEPATH += $$PWD/include \
+               $$PWD/../crowdLib/include
+
+HEADERS += $$files($$PWD/include/*.h)
+SOURCES += $$files($$PWD/src/*.cpp)
+
+OTHER_FILES += $$files(../README.md)
 # where our exe is going to live (root of project)
 DESTDIR=./
 # add the glsl shader files
-OTHER_FILES+= shaders/*.glsl \
-                                                        README.md
+OTHER_FILES+= shaders/*.glsl
 # were are going to default to a console app
-CONFIG += console
 # note each command you add needs a ; as it will be run as a single line
 # first check if we are shadow building or not easiest way is to check out against current
 
@@ -48,3 +41,9 @@ else{ # note brace must be here
         message("Using custom NGL location")
         include($(NGLDIR)/UseNGL.pri)
 }
+
+LIBS += -L../crowdLib -lCrowdLib
+
+QMAKE_CXXFLAGS += -std=c++17
+
+QMAKE_RPATHDIR += $$PWD/../crowdLib

@@ -1,5 +1,7 @@
 crowdLib/*.o
 crowdLib/.qmake.stash
-crowdLib/CrowdLib.pro.user
+crowdLib/CrowdLib.pro.user*
 crowdLib/MakeFile
+crowdLib/Makefile
 crowdLib/lib*
+crowdDemo/crowdDemo.pro.user*

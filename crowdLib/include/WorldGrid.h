@@ -38,13 +38,14 @@ public:
 class WorldGrid
 {
 public:
-    WorldGrid(Params* _prms, RandF* _rand, uint _sX, uint _sY)
+    WorldGrid(Params* _prms, RandF* _rand, uint _sX, uint _sY, BoundingBox _lim)
     {
       if(_sX>0 && _sY>0)
       {
         m_gridSizeX = _sX;
         m_gridSizeY = _sY;
       }
+      m_limit = _lim;
       m_params = _prms;
       m_randF = _rand;
       checkBB();
@@ -57,6 +58,7 @@ public:
     ~WorldGrid();
 
     uint getAt(Vec2 _cell);
+    uint getAt(uint _cell);
     GridCell* cellAt(Vec2 _cell);
     void update();
     void addObject(Agent *_a);
@@ -64,6 +66,9 @@ public:
     std::vector<uint> randPathToExit(uint _current) const;
     uint randomToEntrance(uint _current) const;
     std::vector<uint> randPathToEntrance(uint _current) const;
+    bool insideRoom(Vec2 _pos);
+    Vec2 getGridMidpoint();
+    float getKillRadius();
 private:
     void initGrid();
     void initMap();
@@ -86,7 +91,11 @@ private:
     uint m_cellDimY = 1;
     uint m_gridSizeX = 1;
     uint m_gridSizeY = 1;
+    float m_navPTDistance = 0.25f;
+    float m_killRadius;
+    Vec2 m_midPoint;
     BoundingBox m_limit;
+    BoundingBox m_roomLimit;
     std::vector<GridCell*> m_cells;
     std::vector<Vec2> m_exits;
     std::vector<Vec2> m_entrances;

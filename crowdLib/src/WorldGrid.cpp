@@ -16,6 +16,11 @@ uint WorldGrid::getAt(Vec2 _cell)
     return m_cells.at(_cell.x+_cell.y*m_gridSizeX)->m_value;
 }
 
+uint WorldGrid::getAt(uint _cell)
+{
+    return m_cells.at(_cell)->m_value;
+}
+
 void WorldGrid::update()
 {
     for(GridCell* c : m_cells)
@@ -51,6 +56,7 @@ void WorldGrid::initGrid()
                                     (m_cells[c]->m_limit.m_miny+m_cells[c]->m_limit.m_maxy)/2.f);
       m_cells[c]->m_id = c;
     }
+    m_killRadius = ((m_limit.m_minx+m_limit.m_maxx)/2.f+(m_limit.m_miny+m_limit.m_maxy)/2.f)/2.f;
 }
 
 void WorldGrid::initMap()
@@ -82,6 +88,10 @@ void WorldGrid::initMap()
             setAt(x,m_gridSizeY/2+roomSize/2,1); //  set  ------
             setAt(x,m_gridSizeY/2+roomSize/2,1); //       ------
         }
+        m_roomLimit.m_minx = cellAt(Vec2(m_gridSizeX/2-roomSize/2,m_gridSizeY/2))->m_limit.m_minx;
+        m_roomLimit.m_maxx = cellAt(Vec2(m_gridSizeX/2+roomSize/2,m_gridSizeY/2))->m_limit.m_maxx;
+        m_roomLimit.m_miny = cellAt(Vec2(m_gridSizeX/2,m_gridSizeY/2-roomSize/2))->m_limit.m_miny;
+        m_roomLimit.m_maxy = cellAt(Vec2(m_gridSizeX/2,m_gridSizeY/2+roomSize/2))->m_limit.m_maxy;
 
         //make holes
         uint numExits = m_randF->randi(0, m_params->nav_maxNumExits,0);
@@ -340,7 +350,7 @@ std::vector<std::vector<uint>> WorldGrid::PathTrace(uint _x, uint _y, Vec2 _e)
         newPos = Vec2(m_cells.at((_y-1)*m_gridSizeX+_x)->m_position);
     }
 
-    if(_y!=0 && newPos.distance(_e) <= distance && newPos.distance(_e) != 0)
+    if(_y!=0 && newPos.distance(_e) <= distance && newPos.distance(_e) >= m_navPTDistance)
     {
         if(m_cells.at((_y-1)*m_gridSizeX+_x)->m_value != 1)
         {
@@ -359,7 +369,7 @@ std::vector<std::vector<uint>> WorldGrid::PathTrace(uint _x, uint _y, Vec2 _e)
         case dr::E :
         {
             newPos = Vec2(m_cells.at(_y*m_gridSizeX+_x+1)->m_position);
-            if(_x!=m_gridSizeX-1 && newPos.distance(_e) <= distance && newPos.distance(_e) != 0)
+            if(_x!=m_gridSizeX-1 && newPos.distance(_e) <= distance && newPos.distance(_e) >= m_navPTDistance)
             {
                 if(m_cells.at(_y*m_gridSizeX+_x+1)->m_value != 1)
                 {
@@ -373,7 +383,7 @@ std::vector<std::vector<uint>> WorldGrid::PathTrace(uint _x, uint _y, Vec2 _e)
         case dr::S :
         {
             newPos = Vec2(m_cells.at((_y+1)*m_gridSizeX+_x)->m_position);
-            if(_y!=m_gridSizeY-1 && newPos.distance(_e) <= distance && newPos.distance(_e) != 0)
+            if(_y!=m_gridSizeY-1 && newPos.distance(_e) <= distance && newPos.distance(_e) >= m_navPTDistance)
             {
                 if(m_cells.at((_y+1)*m_gridSizeX+_x)->m_value != 1)
                 {
@@ -387,7 +397,7 @@ std::vector<std::vector<uint>> WorldGrid::PathTrace(uint _x, uint _y, Vec2 _e)
         case dr::W :
         {
             newPos = Vec2(m_cells.at(_y*m_gridSizeX+_x-1)->m_position);
-            if(_x!=0 && newPos.distance(_e) <= distance && newPos.distance(_e) != 0)
+            if(_x!=0 && newPos.distance(_e) <= distance && newPos.distance(_e) >= m_navPTDistance)
             {
                 if(m_cells.at(_y*m_gridSizeX+_x-1)->m_value != 1)
                 {
@@ -476,6 +486,7 @@ void WorldGrid::checkBB()
     float B = (m_limit.m_maxy - m_limit.m_miny)%m_cellDimY;
     m_limit.m_maxy-=B*((m_limit.m_maxy > 0) ? 0.5 : ((m_limit.m_maxy < 0) ? -0.5 : 0));
     m_limit.m_miny+=B*((m_limit.m_miny > 0) ? 0.5 : ((m_limit.m_miny < 0) ? -0.5 : 0));
+    m_midPoint = Vec2((m_limit.m_minx+m_limit.m_maxx)/2.f,(m_limit.m_miny+m_limit.m_maxy)/2.f);
 }
 bool WorldGrid::checkBounds (const Vec2 &_pos, float _r, const BoundingBox &_limit)
 {
@@ -579,3 +590,17 @@ void WorldGrid::checkCollisionOnNode(GridCell* _cell)
     }
 }
 
+bool WorldGrid::insideRoom(Vec2 _pos)
+{
+    return checkBounds(_pos, 0.f, m_roomLimit);
+}
+
+Vec2 WorldGrid::getGridMidpoint()
+{
+    return m_midPoint;
+}
+
+float WorldGrid::getKillRadius()
+{
+    return m_killRadius;
+}

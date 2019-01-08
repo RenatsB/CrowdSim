@@ -38,7 +38,8 @@ void Agent::update(std::vector<Agent*> _neighbours)
             case AgentState::CHARGE : {charge();break;}
             case AgentState::ATTACKFRENZY : {frenzy();break;}
             case AgentState::GIVEUP : {flee();break;}
-            case AgentState::EXIT : {exit();break;}
+            case AgentState::EXIT : {exit(false);break;}
+            case AgentState::ENTER : {enter();break;}
             case AgentState::DONE : {wait();break;}
             case AgentState::FAILED : {wait();break;}
             default : {makeDecision();break;}
@@ -60,7 +61,7 @@ void Agent::makeDecision()
         {
             m_state = AgentState::FLEE;
             m_navPath.clear();
-            m_navPath = pickRandomPtoExit();
+            pickRandomPtoExit();
         }
     }
     else
@@ -89,8 +90,17 @@ void Agent::makeDecision()
             }
             else
             {
-                m_state = AgentState::FOLLOW;
-                pickRandomProduct();
+                if(m_grid->insideRoom(m_pos))
+                {
+                    m_state = AgentState::FOLLOW;
+                    m_navPath.clear();
+                    pickRandomProduct();
+                }
+                else
+                {
+                    m_state = AgentState::ENTER;
+                    pickRandomPtoEntrance();
+                }
             }
         }
     }
@@ -123,7 +133,7 @@ void Agent::receiveFail()
     m_fleeOrigin = m_pos;
     m_state = AgentState::FLEE;
     m_navPath.clear();
-    m_navPath = pickRandomPtoExit();
+    pickRandomPtoExit();
     flee();
 }
 
@@ -223,7 +233,7 @@ void Agent::charge()
                 {
                     m_state = AgentState::EXIT;
                     takeProduct(m_tgt);
-                    exit();
+                    exit(true);
                 }
                 coefficient = tgtDist/minDist;
             }
@@ -239,6 +249,13 @@ void Agent::charge()
 void Agent::flee()
 {
     m_speed = m_initialValues.at(7)*(m_health/m_initialValues.at(6));
+
+    if(!m_grid->insideRoom(m_pos))
+    {
+        m_state = AgentState::WALKAWAY;
+        m_navPath.clear();
+        m_navPoint = (m_pos - m_grid->getGridMidpoint())*1000.f;
+    }
     navigate(false);
 }
 
@@ -267,6 +284,15 @@ void Agent::follow()
     }
 }
 
+void Agent::enter()
+{
+    m_speed = m_initialValues.at(7)*(m_health/m_initialValues.at(6))
+             +m_initialValues.at(7)*(m_desire+m_desperation
+             +m_resolve+m_aggressiveness)*(m_health/m_initialValues.at(6));
+    navigate(false);
+
+}
+
 void Agent::exit(bool _carryProduct)
 {
     if(_carryProduct)
@@ -293,8 +319,29 @@ void Agent::exit(bool _carryProduct)
                  +m_initialValues.at(7)*(m_desire+m_desperation
                  +m_resolve+m_aggressiveness)*(m_health/m_initialValues.at(6));
         navigate(false);
+        if(m_tgt != nullptr && m_tgt.get()->getOwner() == this)
+        {
+            m_tgt.get()->m_pos+=m_lookVector*m_speed*m_Time.get()->DeltaTime();
+        }
     }
+    if(!m_grid->insideRoom(m_pos))
+    {
+        m_state = AgentState::WALKAWAY;
+        m_navPath.clear();
+        m_navPoint = (m_pos - m_grid->getGridMidpoint())*1000.f;
+    }
+}
 
+void Agent::walkaway()
+{
+    m_speed = m_initialValues.at(7)*(m_health/m_initialValues.at(6))
+             +m_initialValues.at(7)*(m_desire+m_desperation
+             +m_resolve+m_aggressiveness)*(m_health/m_initialValues.at(6));
+    navigate(false);
+    if(m_tgt != nullptr && m_tgt.get()->getOwner() == this)
+    {
+        m_tgt.get()->m_pos+=m_lookVector*m_speed*m_Time.get()->DeltaTime();
+    }
 }
 
 void Agent::navigate(bool _customDir)
@@ -403,7 +450,7 @@ void Agent::pickClosestAgent()
     //reason for above assignment is that nothing goes beyond the space square,
     //which means maximum possible distance is the length of its diagonal.
     //for simplicity we just add X and Y values here, which summ is > than diag.
-    Agent* newTgt;
+    Agent* newTgt = nullptr;
     for(auto a : m_neighbours)
     {
         float dist = getPosition().distance(a->getPosition());
@@ -415,45 +462,6 @@ void Agent::pickClosestAgent()
     }
     m_attackTgt = newTgt;
 }
-
-/*void Agent::pickClosestExit()
-{
-    float minDist = m_Params.get()->nav_maxX+m_Params.get()->nav_maxY;
-    //reason for above assignment is that nothing goes beyond the space square,
-    //which means maximum possible distance is the length of its diagonal.
-    //for simplicity we just add X and Y values here, which summ is > than diag.
-    std::shared_ptr<Object> final;
-    std::vector<std::shared_ptr<Object>> points;
-    points = m_shop.get()->getExits();
-    for(auto p : points)
-    {
-        if(p.get()->m_tag == Tag::EXIT || p.get()->m_tag == Tag::TWOWAY)
-        {
-            float dist = getPosition().distance(p.get()->m_pos);
-            if(dist < minDist)
-            {
-                final = p;
-                minDist = dist;
-            }
-        }
-    }
-    m_navPoint = final.get()->m_pos;
-}
-
-void Agent::pickRandomExit()
-{
-    std::vector<Vec2> exits = m_shop.get()->getExits();
-    int randNum = m_rand.get()->randi(0,exits.size(),0);
-    m_navPoint = exits.at(randNum);
-}
-
-void Agent::pickRandomEntrance()
-{
-    std::vector<Vec2> entrances = m_shop.get()->getEntrances();
-    int randNum = m_rand.get()->randi(0,entrances.size(),0);
-    m_navPoint = entrances.at(randNum);
-}
-*/
 
 void Agent::pickRandomPtoExit()
 {
@@ -489,14 +497,6 @@ void Agent::setCell(uint _id)
 {
     m_cellID = _id;
 }
-
-
-
-
-
-
-
-
 
 
 
