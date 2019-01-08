@@ -11,6 +11,15 @@ class WorldGrid;
 class Agent: private Object
 {
 public:
+Agent(std::string _name, WorldGrid* _g, std::shared_ptr<Shop> _s, std::shared_ptr<Time> _t, std::shared_ptr<Params> _p, std::shared_ptr<RandF> _r)
+{
+    m_grid = _g;
+    m_shop = _s;
+    m_Time = _t;
+    m_Params = _p;
+    m_rand = _r;
+    initAgent(_name, _g);
+}
 void initAgent(std::string _name, WorldGrid* _w);
 void setPosition(const Vec2 _pos);
 void setCell(uint _id);

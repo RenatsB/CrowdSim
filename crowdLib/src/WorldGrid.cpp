@@ -34,11 +34,18 @@ void WorldGrid::update()
     }
 }
 
-void WorldGrid::addObject(Agent *_a)
+void WorldGrid::addAgent(Agent *_a)
 {
     int g = checkGrid(_a->getPosition());
     if(g != -1)
       m_cells[g]->m_agentList.push_back(_a);
+}
+
+void WorldGrid::addAgent(Agent *_a, GridCell* _cell)
+{
+    _cell->m_agentList.push_back(_a);
+    _a->setPosition(_cell->m_position);
+    _a->setCell(_cell->m_id);
 }
 
 void WorldGrid::initGrid()
@@ -85,7 +92,7 @@ void WorldGrid::initMap()
         }
         for(uint x=m_gridSizeX/2-roomSize/2; x<m_gridSizeX/2-roomSize/2; ++x)
         {
-            setAt(x,m_gridSizeY/2+roomSize/2,1); //  set  ------
+            setAt(x,m_gridSizeY/2-roomSize/2,1); //  set  ------
             setAt(x,m_gridSizeY/2+roomSize/2,1); //       ------
         }
         m_roomLimit.m_minx = cellAt(Vec2(m_gridSizeX/2-roomSize/2,m_gridSizeY/2))->m_limit.m_minx;
@@ -249,8 +256,33 @@ void WorldGrid::initMap()
             m_exits.reserve(m_exits.size()+p2.size());
             m_exits.insert(m_exits.end(), p2.begin(), p2.end());
         }
+        for(auto c : m_cells)
+        {
+            if(c->m_value==1)
+                m_walls.push_back(c->m_limit);
+        }
+    }
+}
+
+void WorldGrid::spawnAgents()
+{
+    std::vector<GridCell*> spawnZone;
+    for(auto c : m_cells)
+    {
+        if(c->m_id<m_gridSizeX || c->m_id>m_cells.size()-m_gridSizeX ||
+           c->m_id%m_gridSizeX == 0 || c->m_id%m_gridSizeX == m_gridSizeX-1)
+        {
+            spawnZone.push_back(c);
+        }
     }
 
+    for(uint i=0; i<m_params.get()->entity_numAgents; ++i)
+    {
+        Agent* nAgent = new Agent(m_nmaker.get()->makeName(),
+                                  this, m_shop, m_time,
+                                  m_params,m_randF);
+        addAgent(nAgent, spawnZone.at(m_randF.get()->randi(0,spawnZone.size()-1)));
+    }
 }
 
 void WorldGrid::calcPaths()
@@ -603,4 +635,23 @@ Vec2 WorldGrid::getGridMidpoint()
 float WorldGrid::getKillRadius()
 {
     return m_killRadius;
+}
+
+std::vector<Agent*> WorldGrid::getAgents()
+{
+    std::vector<Agent*> ret;
+    for(auto c : m_cells)
+    {
+        if(c->m_agentList.size()>0)
+        {
+            ret.reserve(ret.size()+c->m_agentList.size());
+            ret.insert(ret.end(), c->m_agentList.begin(), c->m_agentList.end());
+        }
+    }
+    return ret;
+}
+
+std::vector<BoundingBox> WorldGrid::getWalls()
+{
+    return m_walls;
 }

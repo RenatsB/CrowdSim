@@ -3,11 +3,19 @@
 #include <string>
 #include <cstdlib>
 #include <array>
+#include <memory>
+class RandF;
+
 class NameMaker
 {
 public:
+NameMaker(std::shared_ptr<RandF> _r)
+{
+    m_randF = _r;
+}
 std::string makeName();
 private:
+std::shared_ptr<RandF> m_randF;
 int u_rand(int r_high);
 std::array<std::string,40> m_names = {"John","Ryan","Kate","Lucy","Eric","Josh","Mary","Justin",
                                    "Lester","Bertha","Stacy","Rob","Alex","Nancy","Luke",

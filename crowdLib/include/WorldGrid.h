@@ -4,6 +4,7 @@
 #include <memory>
 #include "Agent.h"
 #include "Shop.h"
+#include "NameMaker.h"
 /// @file WorldGrid.h
 /// @brief Space separation and object management module
 /// @author Renats Bikmajevs
@@ -38,7 +39,7 @@ public:
 class WorldGrid
 {
 public:
-    WorldGrid(Params* _prms, RandF* _rand, uint _sX, uint _sY, BoundingBox _lim)
+    WorldGrid(std::shared_ptr<Params> _prms, uint _sX, uint _sY, BoundingBox _lim)
     {
       if(_sX>0 && _sY>0)
       {
@@ -47,12 +48,19 @@ public:
       }
       m_limit = _lim;
       m_params = _prms;
-      m_randF = _rand;
       checkBB();
       m_cells.clear();
       m_cells.reserve(m_cellDimX*m_cellDimY);
       m_cells.resize(m_cellDimX*m_cellDimY);
       initGrid();
+      initMap();
+      spawnAgents();
+      m_params = std::make_shared<Params> ();
+      m_randF = std::make_shared<RandF> ();
+      m_shop = std::make_shared<Shop> (m_params);
+      m_shop.get()->setExits(m_exits);
+      m_nmaker = std::make_shared<NameMaker> (m_randF);
+      m_time = std::make_shared<Time> ();
     }
     /// @brief destructor
     ~WorldGrid();
@@ -63,7 +71,8 @@ public:
     void update();
     std::vector<Agent*> getAgents();
     std::vector<BoundingBox> getWalls();
-    void addObject(Agent *_a);
+    void addAgent(Agent *_a);
+    void addAgent(Agent *_a, GridCell* _cell);
     uint randomToExit(uint _current) const;
     std::vector<uint> randPathToExit(uint _current) const;
     uint randomToEntrance(uint _current) const;
@@ -74,6 +83,7 @@ public:
 private:
     void initGrid();
     void initMap();
+    void spawnAgents();
     void calcPaths();
     std::vector<std::vector<std::vector<uint>>> StarComputePaths(bool _type);
     std::vector<std::vector<uint>> PathTrace(uint _x, uint _y, Vec2 _e);
@@ -86,9 +96,10 @@ private:
     void clearGrid();
     void checkCollisionOnNode(GridCell* _cell);
 private:
-    RandF* m_randF;
-    Params* m_params;
-    Shop* m_shop;
+    std::shared_ptr<RandF> m_randF;
+    std::shared_ptr<Params> m_params;
+    std::shared_ptr<Shop> m_shop;
+    std::shared_ptr<Time> m_time;
     uint m_cellDimX = 1;
     uint m_cellDimY = 1;
     uint m_gridSizeX = 1;
@@ -101,10 +112,12 @@ private:
     std::vector<GridCell*> m_cells;
     std::vector<Vec2> m_exits;
     std::vector<Vec2> m_entrances;
+    std::vector<BoundingBox> m_walls;
     //these 2 paths will take most of the space, so store and calculate them here
     //path are stored for each cell
     std::vector<std::vector<std::vector<uint>>> m_exitPaths;
     std::vector<std::vector<std::vector<uint>>> m_enterPaths;
+    std::shared_ptr<NameMaker> m_nmaker;
 };
 
 #endif //CROWDLIB_WORLDGRID_H_
