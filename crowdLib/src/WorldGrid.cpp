@@ -1,4 +1,5 @@
 #include "WorldGrid.h"
+#include <iostream>
 
 /// @brief destructor
 WorldGrid::~WorldGrid()
@@ -9,6 +10,11 @@ WorldGrid::~WorldGrid()
       free(c);
     }
     m_cells.clear();
+}
+
+GridCell* WorldGrid::cellAt(Vec2 _cell)
+{
+    return m_cells.at(_cell.y*m_gridSizeX+_cell.y);
 }
 
 uint WorldGrid::getAt(Vec2 _cell)
@@ -25,11 +31,15 @@ void WorldGrid::update()
 {
     for(GridCell* c : m_cells)
     {
+        std::cout<<"name boop 1"<<std::endl;
         for(Agent* a : c->m_agentList)
         {
+            std::cout<<"name boop 2"<<std::endl;
             a->setCell(c->m_id);
+            std::cout<<"name boop 3"<<std::endl;
             a->update(c->m_agentList);
         }
+        std::cout<<"name boop 4"<<std::endl;
         checkCollisionOnNode(c);
     }
 }
@@ -275,13 +285,15 @@ void WorldGrid::spawnAgents()
             spawnZone.push_back(c);
         }
     }
-
     for(uint i=0; i<m_params.get()->entity_numAgents; ++i)
     {
+        std::cout<<"boop 1"<<std::endl;
         Agent* nAgent = new Agent(m_nmaker.get()->makeName(),
                                   this, m_shop, m_time,
                                   m_params,m_randF);
+        std::cout<<"boop 2"<<std::endl;
         addAgent(nAgent, spawnZone.at(m_randF.get()->randi(0,spawnZone.size()-1)));
+        std::cout<<"boop 3"<<std::endl;
     }
 }
 
@@ -571,27 +583,28 @@ void WorldGrid::clearGrid()
 
 uint WorldGrid::randomToExit(uint _current) const
 {
-    uint a = m_randF->randi(0,m_exitPaths.at(_current).size(),0);
-    uint b = m_randF->randi(0,m_exitPaths.at(_current).at(a).size(),0);
+    uint a = m_randF->randi(0,m_exitPaths.at(_current).size()-1,0);
+    uint b = m_randF->randi(0,m_exitPaths.at(_current).at(a).size()-1,0);
     return m_exitPaths.at(_current).at(a).at(b);
 }
 
 std::vector<uint> WorldGrid::randPathToExit(uint _current) const
 {
-    uint a = m_randF->randi(0,m_exitPaths.at(_current).size(),0);
+    std::cout<<m_exitPaths.size()<<" | "<<std::endl;
+    uint a = m_randF->randi(0,m_exitPaths.at(_current).size()-1,0);
     return m_exitPaths.at(_current).at(a);
 }
 
 uint WorldGrid::randomToEntrance(uint _current) const
 {
-    uint a = m_randF->randi(0,m_enterPaths.at(_current).size(),0);
-    uint b = m_randF->randi(0,m_enterPaths.at(_current).at(a).size(),0);
+    uint a = m_randF->randi(0,m_enterPaths.at(_current).size()-1,0);
+    uint b = m_randF->randi(0,m_enterPaths.at(_current).at(a).size()-1,0);
     return m_enterPaths.at(_current).at(a).at(b);
 }
 
 std::vector<uint> WorldGrid::randPathToEntrance(uint _current) const
 {
-    uint a = m_randF->randi(0,m_enterPaths.at(_current).size(),0);
+    uint a = m_randF->randi(0,m_enterPaths.at(_current).size()-1,0);
     return m_enterPaths.at(_current).at(a);
 }
 

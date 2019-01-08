@@ -29,3 +29,13 @@ void Time::tick()
   m_deltaTime = m_prevTime - m_time;
   m_prevTime = m_prevTime - m_time;
 }
+
+float Time::GetTime()
+{
+    return m_time;
+}
+
+float Time::DeltaTime()
+{
+    return m_deltaTime;
+}

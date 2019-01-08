@@ -1,4 +1,17 @@
 #include "Shop.h"
+#include "WorldGrid.h"
+#include "RandF.h"
+
+void Shop::spawnProducts(BoundingBox _bb)
+{
+    for(uint i=0; i<m_params.get()->entity_numProducts; ++i)
+    {
+        std::shared_ptr<Product> p = std::make_shared<Product> ();
+        p.get()->m_tag = Tag::PRODUCT;
+        p.get()->m_pos = Vec2(m_randF.get()->randf(_bb.m_minx, _bb.m_maxx),m_randF.get()->randf(_bb.m_miny, _bb.m_maxy));
+        m_products.push_back(p);
+    }
+}
 
 void Shop::setExits(std::vector<Vec2> _ex)
 {
@@ -14,6 +27,11 @@ std::vector<Vec2> Shop::getExits() const
 std::vector<std::shared_ptr<Product>> Shop::getRemainingProducts() const
 {
     return m_remp;
+}
+
+std::vector<std::shared_ptr<Product>> Shop::getfreeProducts() const
+{
+    return m_freep;
 }
 
 uint Shop::getNumRemainingProducts() const

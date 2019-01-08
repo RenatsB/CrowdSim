@@ -31,11 +31,11 @@ int main(int argc, char **argv)
   format.setDepthBufferSize(24);
   // now we are going to create our scene window
 
-  auto m_time = std::make_shared<Time> ();
+  //auto m_time = std::make_shared<Time> ();
   auto m_params = std::make_shared<Params> ();
-  auto m_rnd = std::make_shared<RandF> ();
+  //auto m_rnd = std::make_shared<RandF> ();
 
-  NGLScene window(m_time, m_params, m_rnd);
+  NGLScene window(m_params);
   // and set the OpenGL format
   window.setFormat(format);
   // we can now query the version to see if it worked

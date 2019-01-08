@@ -5,5 +5,8 @@ crowdDemo/obj
 crowdLib/CrowdLib.pro.user*
 crowdLib/MakeFile
 crowdLib/Makefile
+crowdDemo/MakeFile
+crowdDemo/Makefile
 crowdLib/lib*
-crowdDemo/crowdDemo.pro.user*
+crowdDemo/CrowdDemo.pro.user*
+crowdDemo/BlackFriday

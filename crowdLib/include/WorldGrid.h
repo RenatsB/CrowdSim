@@ -48,19 +48,20 @@ public:
       }
       m_limit = _lim;
       m_params = _prms;
-      checkBB();
-      m_cells.clear();
-      m_cells.reserve(m_cellDimX*m_cellDimY);
-      m_cells.resize(m_cellDimX*m_cellDimY);
-      initGrid();
-      initMap();
-      spawnAgents();
       m_params = std::make_shared<Params> ();
       m_randF = std::make_shared<RandF> ();
+      m_nmaker = std::make_shared<NameMaker> (m_randF);
+      checkBB();
+      m_cells.clear();
+      m_cells.reserve(m_gridSizeX*m_gridSizeY);
+      m_cells.resize(m_gridSizeX*m_gridSizeY);
+      initGrid();
+      initMap();
       m_shop = std::make_shared<Shop> (m_params);
       m_shop.get()->setExits(m_exits);
-      m_nmaker = std::make_shared<NameMaker> (m_randF);
+      m_shop.get()->spawnProducts(m_roomLimit);
       m_time = std::make_shared<Time> ();
+      spawnAgents();
     }
     /// @brief destructor
     ~WorldGrid();

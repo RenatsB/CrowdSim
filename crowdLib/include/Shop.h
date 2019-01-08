@@ -5,6 +5,10 @@
 #include "Product.h"
 #include "Params.h"
 
+class RandF;
+
+class BoundingBox;
+
 class Shop: private Object
 {
 public:
@@ -20,11 +24,13 @@ public:
     float getRemainingProductStress() const;
     float getDistanceStress() const;
     void update();
+    void spawnProducts(BoundingBox _bb);
 private:
     std::vector<std::shared_ptr<Product>> m_products;
     std::vector<std::shared_ptr<Product>> m_remp;
     std::vector<std::shared_ptr<Product>> m_freep;
     std::vector<Vec2> m_exits;
     std::shared_ptr<Params> m_params;
+    std::shared_ptr<RandF> m_randF;
 };
 #endif //CROWDLIB_SHOP_H_

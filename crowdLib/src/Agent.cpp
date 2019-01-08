@@ -1,6 +1,7 @@
 #include "Agent.h"
 #include <cstdlib>
 #include "WorldGrid.h"
+#include <iostream>
 
 void Agent::initAgent(std::string _name, WorldGrid *_w)
 {
@@ -31,6 +32,7 @@ void Agent::update(std::vector<Agent*> _neighbours)
     {
         if(m_Time.get()->GetTime() >= m_timer)
         {
+            std::cout<<"agent boop 4"<<std::endl;
             switch(m_state)
             {
             case AgentState::FOLLOW : {follow();break;}
@@ -46,6 +48,12 @@ void Agent::update(std::vector<Agent*> _neighbours)
             }
         }
     }
+    std::cout<<"agent boop 5"<<std::endl;
+}
+
+void Agent::takeProduct(std::shared_ptr<Product> _tgt)
+{
+    _tgt.get()->setOwner(this);
 }
 
 void Agent::setPosition(const Vec2 _pos)
@@ -55,10 +63,14 @@ void Agent::setPosition(const Vec2 _pos)
 
 void Agent::makeDecision()
 {
+
+    std::cout<<"decision boop 1"<<std::endl;
     if(m_desire <= m_Params.get()->giveup_desireLvl)
     {
+        std::cout<<"decision boop 2"<<std::endl;
         if(dodont(m_Params.get()->giveup_chance))
         {
+            std::cout<<"decision boop giveup"<<std::endl;
             m_state = AgentState::FLEE;
             m_navPath.clear();
             pickRandomPtoExit();
@@ -66,16 +78,20 @@ void Agent::makeDecision()
     }
     else
     {
+        std::cout<<"decision boop 3"<<std::endl;
         if(m_aggressiveness >= m_Params->frenzy_minAggressionLvl
                 || m_mentalStability <= m_Params->frenzy_maxStabilityLvl)
         {
+            std::cout<<"decision boop 4"<<std::endl;
             if(dodont(m_Params->frenzy_chance))
             {
+                std::cout<<"decision boop frenzy"<<std::endl;
                 m_state = AgentState::ATTACKFRENZY;
                 pickClosestAgent();
             }
             else
             {
+                std::cout<<"decision boop follow"<<std::endl;
                 m_state = AgentState::FOLLOW;
                 pickRandomProduct();
                 if(m_tgt == nullptr)
@@ -84,20 +100,25 @@ void Agent::makeDecision()
         }
         else
         {
+            std::cout<<"decision boop 5"<<std::endl;
             if(m_shop.get()->getNumRemainingProducts() == 0)
             {
+                std::cout<<"decision boop fail"<<std::endl;
                 receiveFail();
             }
             else
             {
+                std::cout<<"decision boop 6"<<std::endl;
                 if(m_grid->insideRoom(m_pos))
                 {
+                    std::cout<<"decision boop inside room follow"<<std::endl;
                     m_state = AgentState::FOLLOW;
                     m_navPath.clear();
                     pickRandomProduct();
                 }
                 else
                 {
+                    std::cout<<"decision boop enter"<<std::endl;
                     m_state = AgentState::ENTER;
                     pickRandomPtoEntrance();
                 }
@@ -132,8 +153,11 @@ void Agent::receiveFail()
 {
     m_fleeOrigin = m_pos;
     m_state = AgentState::FLEE;
+    std::cout<<"receive fail boop 1"<<std::endl;
     m_navPath.clear();
+    std::cout<<"receive fail boop 2"<<std::endl;
     pickRandomPtoExit();
+    std::cout<<"receive fail boop 3"<<std::endl;
     flee();
 }
 
@@ -346,19 +370,22 @@ void Agent::walkaway()
 
 void Agent::navigate(bool _customDir)
 {
+    std::cout<<"navigate boop 1"<<std::endl;
     if(_customDir)
     {
         m_lookVector = m_tgt.get()->m_pos - m_pos;
     }
     else
     {
+        std::cout<<"navigate boop 2"<<std::endl;
         if(m_navPath.size()!=0)
         {
             m_navPoint = m_navPath.at(0);
             m_navPath.erase(m_navPath.begin());
         }
+        std::cout<<"navigate boop 3"<<std::endl;
     }
-
+    std::cout<<"navigate boop 4"<<std::endl;
     m_pos += m_drag;
     m_drag = Vec2(0.f,0.f);
     m_lookVector = m_navPoint - m_pos;
@@ -381,11 +408,10 @@ void Agent::updateInfluences()
     float remainingProductsStress = m_shop.get()->getRemainingProductStress();
     //GET PRODUCT DISTANCE STRESS IF TOO LITTLE LEFT
     float distanceStress = m_shop.get()->getDistanceStress();
-
     float stress = std::max(timeStress,remainingProductsStress*distanceStress);
+
     m_desperation = m_initialValues.at(5) + (m_Params.get()->desperation_maxLvl-m_initialValues.at(5))*stress;
     m_resolve = m_initialValues.at(3) + (m_Params.get()->resolve_maxLvl-m_initialValues.at(3))*stress;
-
     m_influenceRadius = 1.f+m_weight*((m_health/m_Params.get()->health_maxLvl)
                                       +(m_power/m_Params.get()->power_maxLvl));
     //This probably needs explanation:
@@ -465,8 +491,11 @@ void Agent::pickClosestAgent()
 
 void Agent::pickRandomPtoExit()
 {
+    std::cout<<"pickRandomPtoExit boop 1"<<std::endl;
     m_navPath.clear();
+    std::cout<<"pickRandomPtoExit boop 2"<<std::endl;
     m_navPath = m_grid->randPathToExit(m_cellID);
+    std::cout<<"pickRandomPtoExit boop 3"<<std::endl;
 }
 
 void Agent::pickRandomPtoEntrance()

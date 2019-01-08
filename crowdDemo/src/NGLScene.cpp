@@ -2,26 +2,19 @@
 #include <QGuiApplication>
 
 #include "NGLScene.h"
-#include "ngl/
 #include <ngl/Random.h>
 #include <ngl/ShaderLib.h>
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
 
-
-//----------------------------------------------------------------------------------------------------------------------
-/// @brief extents of the bbox
-//----------------------------------------------------------------------------------------------------------------------
-const static int s_extents=20;
-
-NGLScene::NGLScene(std::shared_ptr<Time> _t, std::shared_ptr<Params> _p, std::shared_ptr<RandF> _r)
+NGLScene::NGLScene(std::shared_ptr<Params> _p)
 {
     BoundingBox worldBB;
     worldBB.m_minx = -21.f;
     worldBB.m_maxx = 21.f;
     worldBB.m_miny = -21.f;
     worldBB.m_maxy = 21.f;
-    m_world = std::make_unique(new WorldGrid(_p.get(), _r.get(), 42, 42, worldBB));
+    m_world = std::make_unique<WorldGrid>(_p, 42, 42, worldBB);
 }
 
 void NGLScene::resetScene()
@@ -46,6 +39,7 @@ void NGLScene::initializeGL()
   // we must call this first before any other GL commands to load and link the
   // gl commands from the lib, if this is not done program will crash
   ngl::NGLInit::instance();
+  m_transform.reset();
 
   glClearColor(0.4f, 0.4f, 0.4f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
@@ -95,12 +89,19 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
-  MV= m_view *m_mouseGlobalTX;
+  MV= m_view *m_mouseGlobalTX*m_transform.getMatrix();
   MVP=m_project *MV;
   normalMatrix=MV;
   normalMatrix.inverse().transpose();
   shader->setUniform("MVP",MVP);
   shader->setUniform("normalMatrix",normalMatrix);
+
+  /*t.M=m_view*m_mouseGlobalTX*m_transform.getMatrix();
+
+       t.MVP=m_project*t.M;
+       t.normalMatrix=t.M;
+       t.normalMatrix.inverse().transpose();
+  shader->setUniformBuffer("TransformUBO",sizeof(transform),&t.MVP.m_00);*/
 }
 
 void NGLScene::loadMatricesToColourShader()
@@ -133,11 +134,16 @@ void NGLScene::paintGL()
    m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;
    m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
 
+   updateScene();
+
+   ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
+    prim->createSphere("sphere",1,40);
+
   // grab an instance of the shader manager
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   (*shader)["nglColourShader"]->use();
   loadMatricesToColourShader();
-  //m_bbox->draw();
+  //m_box.draw();
 
   shader->use("nglDiffuseShader");
 
@@ -146,11 +152,17 @@ void NGLScene::paintGL()
   for(auto a : ags)
   {
       m_transform.reset();
-        {
-          m_transform.setPosition(a->getPosition().x,a->getPosition().y,0.0);
+      {
+          m_transform.setPosition(a->getPosition().x,0.0,a->getPosition().y);
           loadMatricesToShader();
           prim->draw("sphere");
       }
+  }
+  m_transform.reset();
+  for(auto b : bbs)
+  {
+      m_box.reset( new ngl::BBox(ngl::Vec3((b.m_maxx+b.m_minx)/2.f,0.0,(b.m_maxy+b.m_miny)/2.f),b.m_maxx-b.m_minx,b.m_maxx-b.m_minx,b.m_maxy-b.m_miny));
+      m_box.get()->draw();
   }
 }
 
@@ -265,18 +277,18 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
     update();
 }
 
-/*void NGLScene::timerEvent(QTimerEvent *_event )
+void NGLScene::timerEvent(QTimerEvent *_event )
 {
-    if(_event->timerId() == m_sphereUpdateTimer)
+    /*if(_event->timerId() == m_sphereUpdateTimer)
     {
         if (m_animate !=true)
         {
             return;
         }
-    }
+    }*/
     updateScene();
     update();
-}*/
+}
 
 
 /*bool NGLScene::sphereSphereCollision( ngl::Vec3 _pos1, GLfloat _radius1, ngl::Vec3 _pos2, GLfloat _radius2 )

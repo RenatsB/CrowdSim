@@ -4,7 +4,10 @@
 class Time
 {
 public :
-  Time()=default;
+  Time()
+  {
+      LaunchTimer();
+  }
   ~Time()=default;
 
   float GetTime();

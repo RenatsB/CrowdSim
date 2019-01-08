@@ -1,11 +1,12 @@
 #ifndef NGLSCENE_H_
 #define NGLSCENE_H_
-//#include <ngl/BBox.h>
+#include <ngl/BBox.h>
 #include <ngl/Vec3.h>
 #include <ngl/Text.h>
 #include "WindowParams.h"
 //#include "Sphere.h"
 #include <QOpenGLWindow>
+#include <ngl/Transformation.h>
 #include <memory>
 #include "WorldGrid.h"
 //----------------------------------------------------------------------------------------------------------------------
@@ -28,11 +29,13 @@ class NGLScene : public QOpenGLWindow
     /// @brief ctor for our NGL drawing class
     /// @param [in] parent the parent window to the class
     //----------------------------------------------------------------------------------------------------------------------
-    NGLScene(std::shared_ptr<Time> _t, std::shared_ptr<Params> _p, std::shared_ptr<RandF> _r);
+    NGLScene(std::shared_ptr<Params> _p);
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief dtor must close down ngl and release OpenGL resources
     //----------------------------------------------------------------------------------------------------------------------
     ~NGLScene() override;
+
+    void resetScene();
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief the initialize class is called once when the window is created and we have a valid GL context
     /// use this to setup any default GL stuff
@@ -48,6 +51,8 @@ class NGLScene : public QOpenGLWindow
     void resizeGL(int _w, int _h) override;
 
 private:
+    ngl::Transformation m_transform;
+    std::unique_ptr<ngl::BBox> m_box;
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief the windows params such as mouse and rotations etc
     //----------------------------------------------------------------------------------------------------------------------
