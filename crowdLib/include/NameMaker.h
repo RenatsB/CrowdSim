@@ -1,5 +1,5 @@
-#ifndef NAMEMAKER_H_
-#define NAMEMAKER_H_
+#ifndef CROWDLIB_NAMEMAKER_H_
+#define CROWDLIB_NAMEMAKER_H_
 #include <string>
 #include <cstdlib>
 #include <array>
@@ -23,4 +23,4 @@ std::array<std::string,40> m_snames = {"Stark","Baddison","Stabby","Kickers","Fl
                                      "Greasey","Afraid","Runaway","Macey","Magnificent","Claw",
                                      "Cuntington","Jerkins","Crusher"};
 };
-#endif //NAMEMAKER_H_
+#endif //CROWDLIB_NAMEMAKER_H_

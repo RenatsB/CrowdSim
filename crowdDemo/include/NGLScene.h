@@ -1,11 +1,13 @@
 #ifndef NGLSCENE_H_
 #define NGLSCENE_H_
-#include <ngl/BBox.h>
+//#include <ngl/BBox.h>
+#include <ngl/Vec3.h>
 #include <ngl/Text.h>
 #include "WindowParams.h"
-#include "Sphere.h"
+//#include "Sphere.h"
 #include <QOpenGLWindow>
 #include <memory>
+#include "WorldGrid.h"
 //----------------------------------------------------------------------------------------------------------------------
 /// @file NGLScene.h
 /// @brief this class inherits from the Qt OpenGLWindow and allows us to use NGL to draw OpenGL
@@ -26,7 +28,7 @@ class NGLScene : public QOpenGLWindow
     /// @brief ctor for our NGL drawing class
     /// @param [in] parent the parent window to the class
     //----------------------------------------------------------------------------------------------------------------------
-    NGLScene(int _numSpheres);
+    NGLScene(std::shared_ptr<Time> _t, std::shared_ptr<Params> _p, std::shared_ptr<RandF> _r);
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief dtor must close down ngl and release OpenGL resources
     //----------------------------------------------------------------------------------------------------------------------
@@ -64,30 +66,8 @@ private:
     /// @brief the model position for mouse movement
     //----------------------------------------------------------------------------------------------------------------------
     ngl::Vec3 m_modelPos;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief a dynamic array to contain our spheres
-    //----------------------------------------------------------------------------------------------------------------------
-    std::vector <Sphere> m_sphereArray;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief the bounding box to contain the spheres
-    //----------------------------------------------------------------------------------------------------------------------
-    std::unique_ptr<ngl::BBox> m_bbox;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief flag to indicate if we need to do spheresphere checks
-    //----------------------------------------------------------------------------------------------------------------------
-    bool m_checkSphereSphere;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief the number of spheres we are creating
-    //----------------------------------------------------------------------------------------------------------------------
-    int m_numSpheres;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief timer to change the sphere position by calling update()
-    //----------------------------------------------------------------------------------------------------------------------
-    int m_sphereUpdateTimer;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief flag to indicate if animation is active or not
-    //----------------------------------------------------------------------------------------------------------------------
-    bool m_animate;
+
+    std::unique_ptr<WorldGrid> m_world;
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief this method is called once per frame to update the sphere positions
     /// and do the collision detection

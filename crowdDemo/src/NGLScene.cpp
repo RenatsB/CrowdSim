@@ -2,7 +2,7 @@
 #include <QGuiApplication>
 
 #include "NGLScene.h"
-
+#include "ngl/
 #include <ngl/Random.h>
 #include <ngl/ShaderLib.h>
 #include <ngl/NGLInit.h>
@@ -14,29 +14,19 @@
 //----------------------------------------------------------------------------------------------------------------------
 const static int s_extents=20;
 
-NGLScene::NGLScene(int _numSpheres)
+NGLScene::NGLScene(std::shared_ptr<Time> _t, std::shared_ptr<Params> _p, std::shared_ptr<RandF> _r)
 {
-  setTitle("Sphere Bounding Box Collisions");
-  m_animate=true;
-  m_checkSphereSphere=false;
-  // create vectors for the position and direction
-  m_numSpheres=_numSpheres;
-  resetSpheres();
-
+    BoundingBox worldBB;
+    worldBB.m_minx = -21.f;
+    worldBB.m_maxx = 21.f;
+    worldBB.m_miny = -21.f;
+    worldBB.m_maxy = 21.f;
+    m_world = std::make_unique(new WorldGrid(_p.get(), _r.get(), 42, 42, worldBB));
 }
 
-void NGLScene::resetSpheres()
+void NGLScene::resetScene()
 {
-    m_sphereArray.clear();
-    ngl::Vec3 dir;
-    ngl::Random *rng=ngl::Random::instance();
-    // loop and create the initial particle list
-    for(int i=0; i<m_numSpheres; ++i)
-    {
-        dir=rng->getRandomVec3();
-        // add the spheres to the end of the particle list
-    m_sphereArray.push_back(Sphere(rng->getRandomPoint(s_extents,s_extents,s_extents),dir,rng->randomPositiveNumber(2)+0.5f));
-    }
+
 
 }
 NGLScene::~NGLScene()
@@ -88,12 +78,11 @@ void NGLScene::initializeGL()
 
   ngl::VAOPrimitives *prim =  ngl::VAOPrimitives::instance();
   prim->createSphere("sphere",1.0f,40.0f);
- // create our Bounding Box, needs to be done once we have a gl context as we create VAO for drawing
-  m_bbox.reset( new ngl::BBox(ngl::Vec3(),80.0f,80.0f,80.0f));
+  //prim->loadBinary("cube", "./models/cube.obj", 0);
 
-  m_bbox->setDrawMode(GL_LINE);
+  //m_bbox->setDrawMode(GL_LINE);
 
-  m_sphereUpdateTimer=startTimer(40);
+  //m_sphereUpdateTimer=startTimer(40);
 
 }
 
@@ -148,25 +137,27 @@ void NGLScene::paintGL()
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   (*shader)["nglColourShader"]->use();
   loadMatricesToColourShader();
-  m_bbox->draw();
+  //m_bbox->draw();
 
   shader->use("nglDiffuseShader");
 
-    for(Sphere s : m_sphereArray)
-    {
-    s.draw("nglDiffuseShader",m_mouseGlobalTX,m_view,m_project);
-    }
-
+  std::vector<Agent*> ags = m_world.get()->getAgents();
+  std::vector<BoundingBox> bbs = m_world.get()->getWalls();
+  for(auto a : ags)
+  {
+      m_transform.reset();
+        {
+          m_transform.setPosition(a->getPosition().x,a->getPosition().y,0.0);
+          loadMatricesToShader();
+          prim->draw("sphere");
+      }
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 void NGLScene::updateScene()
 {
-    for(Sphere &s : m_sphereArray)
-    {
-        s.move();
-    }
-    checkCollisions();
+    m_world.get()->update();
 }
 
 
@@ -265,11 +256,7 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_F : showFullScreen(); break;
   // show windowed
   case Qt::Key_N : showNormal(); break;
-  case  Qt::Key_Space : m_animate^=true; break;
-  case Qt::Key_S : m_checkSphereSphere^=true; break;
-  case Qt::Key_R : resetSpheres(); break;
-  case Qt::Key_Minus : removeSphere(); break;
-  case Qt::Key_Plus : addSphere(); break;
+  case Qt::Key_R : resetScene(); break;
 
   default : break;
   }
@@ -278,7 +265,7 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
     update();
 }
 
-void NGLScene::timerEvent(QTimerEvent *_event )
+/*void NGLScene::timerEvent(QTimerEvent *_event )
 {
     if(_event->timerId() == m_sphereUpdateTimer)
     {
@@ -289,10 +276,10 @@ void NGLScene::timerEvent(QTimerEvent *_event )
     }
     updateScene();
     update();
-}
+}*/
 
 
-bool NGLScene::sphereSphereCollision( ngl::Vec3 _pos1, GLfloat _radius1, ngl::Vec3 _pos2, GLfloat _radius2 )
+/*bool NGLScene::sphereSphereCollision( ngl::Vec3 _pos1, GLfloat _radius1, ngl::Vec3 _pos2, GLfloat _radius2 )
 {
   // the relative position of the spheres
   ngl::Vec3 relPos;
@@ -314,10 +301,10 @@ bool NGLScene::sphereSphereCollision( ngl::Vec3 _pos1, GLfloat _radius1, ngl::Ve
   {
     return false;
   }
-}
+}*/
 
 //----------------------------------------------------------------------------------------------------------------------
-void NGLScene::BBoxCollision()
+/*void NGLScene::BBoxCollision()
 {
   //create an array of the extents of the bounding box
   float ext[6];
@@ -356,9 +343,9 @@ void NGLScene::BBoxCollision()
       }//end of hit test
      }//end of each face test
     }//end of for
-}
+}*/
 
-void  NGLScene::checkSphereCollisions()
+/*void  NGLScene::checkSphereCollisions()
 {
   bool collide;
 
@@ -385,10 +372,10 @@ void  NGLScene::checkSphereCollisions()
       }
     }
   }
-}
+}*/
 
 
-void  NGLScene::checkCollisions()
+/*void  NGLScene::checkCollisions()
 {
 
     if(m_checkSphereSphere == true)
@@ -397,9 +384,9 @@ void  NGLScene::checkCollisions()
     }
     BBoxCollision();
 
-}
+}*/
 
-void NGLScene::removeSphere()
+/*void NGLScene::removeSphere()
 {
   std::vector<Sphere>::iterator end=m_sphereArray.end();
   if(--m_numSpheres==0)
@@ -410,9 +397,9 @@ void NGLScene::removeSphere()
   {
     m_sphereArray.erase(end-1,end);
   }
-}
+}*/
 
-void NGLScene::addSphere()
+/*void NGLScene::addSphere()
 {
   ngl::Random *rng=ngl::Random::instance();
   ngl::Vec3 dir;
@@ -420,7 +407,7 @@ void NGLScene::addSphere()
   // add the spheres to the end of the particle list
   m_sphereArray.push_back(Sphere(rng->getRandomPoint(s_extents,s_extents,s_extents),dir,rng->randomPositiveNumber(2)+0.5));
   ++m_numSpheres;
-}
+}*/
 
 
 

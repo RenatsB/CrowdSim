@@ -1,5 +1,5 @@
-#ifndef PARAMS_H_
-#define PARAMS_H_
+#ifndef CROWDLIB_PARAMS_H_
+#define CROWDLIB_PARAMS_H_
 #include <cmath>
 
 typedef unsigned int uint;
@@ -142,4 +142,4 @@ float frenzy_maxStabilityLvl = 0.4f;
 float frenzy_chance = 0.2f;
 float frenzy_stopChance = 0.35f;
 };
-#endif //PARAMS_H_
+#endif //CROWDLIB_PARAMS_H_

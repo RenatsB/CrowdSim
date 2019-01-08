@@ -1,5 +1,5 @@
-#ifndef AGENT_H_
-#define AGENT_H_
+#ifndef CROWDLIB_AGENT_H_
+#define CROWDLIB_AGENT_H_
 #include "EnumClasses.h"
 #include <memory>
 #include "Time.h"
@@ -83,4 +83,4 @@ std::shared_ptr<Params> m_Params;
 std::shared_ptr<RandF> m_rand;
 std::vector<Agent*> m_neighbours;
 };
-#endif //AGENT_H_
+#endif //CROWDLIB_AGENT_H_

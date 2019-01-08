@@ -1,5 +1,5 @@
-#ifndef WORLDGRID_H_
-#define WORLDGRID_H_
+#ifndef CROWDLIB_WORLDGRID_H_
+#define CROWDLIB_WORLDGRID_H_
 #include <vector>
 #include <memory>
 #include "Agent.h"
@@ -61,6 +61,8 @@ public:
     uint getAt(uint _cell);
     GridCell* cellAt(Vec2 _cell);
     void update();
+    std::vector<Agent*> getAgents();
+    std::vector<BoundingBox> getWalls();
     void addObject(Agent *_a);
     uint randomToExit(uint _current) const;
     std::vector<uint> randPathToExit(uint _current) const;
@@ -105,5 +107,5 @@ private:
     std::vector<std::vector<std::vector<uint>>> m_enterPaths;
 };
 
-#endif //WORLDGRID_H_
+#endif //CROWDLIB_WORLDGRID_H_
 

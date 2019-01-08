@@ -1,5 +1,5 @@
-#ifndef SHOP_H_
-#define SHOP_H_
+#ifndef CROWDLIB_SHOP_H_
+#define CROWDLIB_SHOP_H_
 #include <vector>
 #include <memory>
 #include "Product.h"
@@ -27,4 +27,4 @@ private:
     std::vector<Vec2> m_exits;
     std::shared_ptr<Params> m_params;
 };
-#endif //SHOP_H_
+#endif //CROWDLIB_SHOP_H_

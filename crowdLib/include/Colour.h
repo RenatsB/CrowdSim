@@ -1,5 +1,5 @@
-#ifndef COLOUR_H_
-#define COLOUR_H_
+#ifndef CROWDLIB_COLOUR_H_
+#define CROWDLIB_COLOUR_H_
 class Colour
 {
 public:
@@ -83,4 +83,4 @@ float b;
 //-----------------------------------------------------------------------------------------------------
 float a;
 };
-#endif //COLOUR_H_
+#endif //CROWDLIB_COLOUR_H_

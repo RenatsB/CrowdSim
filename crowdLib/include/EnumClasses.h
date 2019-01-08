@@ -1,5 +1,5 @@
-#ifndef ENUMCLASSES_H_
-#define ENUMCLASSES_H_
+#ifndef CROWDLIB_ENUMCLASSES_H_
+#define CROWDLIB_ENUMCLASSES_H_
 
 enum class AgentState
 {
@@ -32,4 +32,4 @@ enum class Direction
     W
 };
 
-#endif //ENUMCLASSES_H_
+#endif //CROWDLIB_ENUMCLASSES_H_

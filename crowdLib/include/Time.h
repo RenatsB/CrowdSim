@@ -1,5 +1,5 @@
-#ifndef TIME_H_
-#define TIME_H_
+#ifndef CROWDLIB_TIME_H_
+#define CROWDLIB_TIME_H_
 #include <chrono>
 class Time
 {
@@ -21,4 +21,4 @@ private:
   float m_deltaTime;
   float m_time;
 };
-#endif //TIME_H_
+#endif //CROWDLIB_TIME_H_

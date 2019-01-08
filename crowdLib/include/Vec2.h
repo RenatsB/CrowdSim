@@ -1,5 +1,5 @@
-#ifndef VEC2_H_
-#define VEC2_H_
+#ifndef CROWDLIB_VEC2_H_
+#define CROWDLIB_VEC2_H_
 class Vec2
 {
 public:
@@ -118,4 +118,4 @@ float x;
 //-----------------------------------------------------------------------------------------------------
 float y;
 };
-#endif //VEC2_H_
+#endif //CROWDLIB_VEC2_H_

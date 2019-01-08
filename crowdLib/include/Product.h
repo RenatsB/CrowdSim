@@ -1,5 +1,5 @@
-#ifndef PRODUCT_H_
-#define PRODUCT_H_
+#ifndef CROWDLIB_PRODUCT_H_
+#define CROWDLIB_PRODUCT_H_
 #include "Object.h"
 #include <memory>
 class Agent;
@@ -11,4 +11,4 @@ Agent* getOwner() const;
 private:
 Agent* m_owner;
 };
-#endif //PRODUCT_H_
+#endif //CROWDLIB_PRODUCT_H_

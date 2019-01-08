@@ -1,5 +1,5 @@
-#ifndef OBJECT_H_
-#define OBJECT_H_
+#ifndef CROWDLIB_OBJECT_H_
+#define CROWDLIB_OBJECT_H_
 #include "Vec2.h"
 #include "Colour.h"
 #include <string>
@@ -16,4 +16,4 @@ Colour m_colour;
 Vec2 m_pos;
 };
 
-#endif //OBJECT_H_
+#endif //CROWDLIB_OBJECT_H_
