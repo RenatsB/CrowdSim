@@ -138,7 +138,7 @@ std::string Pathfinder::PathFind(const uint & xStart, const uint & yStart,
         {
             xdx=x+dx[i]; ydy=y+dy[i];
 
-            if(!(xdx<0 || xdx>sizeX-1 || ydy<0 || ydy>sizeY-1 || map[ydy][xdx]==1
+            if(!(xdx<0 || xdx>(int)sizeX-1 || ydy<0 || ydy>(int)sizeY-1 || map[ydy][xdx]==1
                 || closed_nodes_map[ydy][xdx]==1))
             {
                 // generate a child node

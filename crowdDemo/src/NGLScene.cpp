@@ -7,14 +7,14 @@
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
 
-NGLScene::NGLScene(std::shared_ptr<Params> _p)
+NGLScene::NGLScene(std::shared_ptr<Params> _p, std::shared_ptr<Time> _t)
 {
     BoundingBox worldBB;
     worldBB.m_minx = -21.f;
     worldBB.m_maxx = 21.f;
     worldBB.m_miny = -21.f;
     worldBB.m_maxy = 21.f;
-    m_world = std::make_unique<WorldGrid>(_p, 42, 42, worldBB);
+    m_world = std::make_unique<WorldGrid>(_p, 42, 42, worldBB, _t);
 }
 
 void NGLScene::resetScene()

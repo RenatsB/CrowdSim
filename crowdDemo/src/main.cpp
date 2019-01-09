@@ -4,8 +4,14 @@ basic OpenGL demo modified from http://qt-project.org/doc/qt-5.0/qtgui/openglwin
 #include <QtGui/QGuiApplication>
 #include <iostream>
 #include "NGLScene.h"
+#include <thread>
 
+//static std::shared_ptr<Time> mytime;
 
+void forThread(std::shared_ptr<Time> _t)
+{
+    _t.get()->LaunchTimer();
+}
 
 int main(int argc, char **argv)
 {
@@ -35,7 +41,10 @@ int main(int argc, char **argv)
   auto m_params = std::make_shared<Params> ();
   //auto m_rnd = std::make_shared<RandF> ();
 
-  NGLScene window(m_params);
+  std::shared_ptr<Time> time = std::make_shared<Time> ();
+  std::thread t1(forThread, time);
+
+  NGLScene window(m_params, time);
   // and set the OpenGL format
   window.setFormat(format);
   // we can now query the version to see if it worked
@@ -45,7 +54,9 @@ int main(int argc, char **argv)
   // and finally show
   window.show();
 
-  return app.exec();
+  int ret = app.exec();
+  t1.join();
+  return ret;
 }
 
 

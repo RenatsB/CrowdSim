@@ -39,7 +39,8 @@ public:
 class WorldGrid
 {
 public:
-    WorldGrid(std::shared_ptr<Params> _prms, uint _sX, uint _sY, BoundingBox _lim);
+    WorldGrid(std::shared_ptr<Params> _prms, uint _sX, uint _sY,
+              BoundingBox _lim, std::shared_ptr<Time> _tm);
     /// @brief destructor
     ~WorldGrid();
 
@@ -63,7 +64,7 @@ private:
     void initMap();
     void spawnAgents();
     void calcPaths();
-    std::vector<std::vector<std::vector<uint>>> AStarPathfind(bool _type);
+    void AStarPathfind();
     std::vector<std::vector<std::vector<uint>>> StarComputePaths(bool _type);
     std::vector<std::vector<uint>> PathTrace(uint _x, uint _y, Vec2 _e);
     void setAt(Vec2 _cell, uint _v);

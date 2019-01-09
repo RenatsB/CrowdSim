@@ -2,7 +2,8 @@
 #include <iostream>
 #include "Pathfinder.h"
 
-WorldGrid::WorldGrid(std::shared_ptr<Params> _prms, uint _sX, uint _sY, BoundingBox _lim)
+WorldGrid::WorldGrid(std::shared_ptr<Params> _prms, uint _sX, uint _sY,
+                     BoundingBox _lim, std::shared_ptr<Time> _tm)
 {
   if(_sX>0 && _sY>0)
   {
@@ -11,6 +12,7 @@ WorldGrid::WorldGrid(std::shared_ptr<Params> _prms, uint _sX, uint _sY, Bounding
   }
   m_limit = _lim;
   m_params = _prms;
+  m_time = _tm;
   m_params = std::make_shared<Params> ();
   m_randF = std::make_shared<RandF> ();
   m_nmaker = std::make_shared<NameMaker> (m_randF);
@@ -23,9 +25,9 @@ WorldGrid::WorldGrid(std::shared_ptr<Params> _prms, uint _sX, uint _sY, Bounding
   m_shop = std::make_shared<Shop> (m_params);
   m_shop.get()->setExits(m_exits);
   m_shop.get()->spawnProducts(m_roomLimit);
-  m_time = std::make_shared<Time> ();
   m_shop.get()->update();
   m_pfinder = std::make_shared<Pathfinder> (m_gridSizeX, m_gridSizeY, this);
+  calcPaths();
   spawnAgents();
 }
 /// @brief destructor
@@ -143,12 +145,28 @@ void WorldGrid::initMap()
         m_exits.clear();
         m_entrances.clear();
 
+        setAt(m_gridSizeX/2-roomSize/2,m_gridSizeY/2,4);
+        setAt(m_gridSizeX/2-roomSize/2,m_gridSizeY/2+1,4);
+        setAt(m_gridSizeX/2-roomSize/2,m_gridSizeY/2-1,4);
+
+        m_exits.push_back(Vec2(m_gridSizeX/2-roomSize/2,m_gridSizeY/2));
+        m_entrances.push_back(Vec2(m_gridSizeX/2-roomSize/2,m_gridSizeY/2));
+        m_exits.push_back(Vec2(m_gridSizeX/2-roomSize/2,m_gridSizeY/2+1));
+        m_entrances.push_back(Vec2(m_gridSizeX/2-roomSize/2,m_gridSizeY/2+1));
+        m_exits.push_back(Vec2(m_gridSizeX/2-roomSize/2,m_gridSizeY/2-1));
+        m_entrances.push_back(Vec2(m_gridSizeX/2-roomSize/2,m_gridSizeY/2-1));
+
         //make holes
+        /*
         uint numExits = m_randF->randi(0, m_params->nav_maxNumExits,0);
         uint numEntrances = m_randF->randi(0, m_params->nav_maxNumEntrances,0);
         uint numInouts = m_randF->randi(1, m_params->nav_maxNumInouts,0);
         uint exitSize = (uint)(sqrt(roomSize)/2);
         std::vector<Vec2> takenXY;
+
+        uint diffx = m_gridSizeX/2 - roomSize/2;
+        uint diffy = m_gridSizeY/2 - roomSize/2;
+
         for(uint i=0; i<(numExits+numEntrances+numInouts); ++i)
         {
             Vec2 p;
@@ -171,7 +189,7 @@ void WorldGrid::initMap()
                 p.y = k%2;
                 if(k>1)
                 {
-                    //p.x=m_gridSizeX/2-(((k%2)*-1)+1)*roomSize/2+(k%2)*roomSize/2;
+                    p.x=m_gridSizeX/2-(((k%2)*-1)+1)*roomSize/2+(k%2)*roomSize/2;
                     p.y=m_randF->randi(1,roomSize-1);
                     //if exit size > 1, need to check if current point is at corners,
                     //if so, instead of setting points at both its sides, just
@@ -183,11 +201,11 @@ void WorldGrid::initMap()
                             Vec2 a;
                             if(p.y <= 1+exitSize/2)
                             {
-                                a=Vec2(p.x, p.y+e);
+                                a=Vec2(p.x, p.y+e+diffy);
                             }
                             else
                             {
-                                a=Vec2(p.x, p.y-e);
+                                a=Vec2(p.x, p.y-e+diffy);
                             }
                             p2.push_back(a);
                         }
@@ -200,9 +218,9 @@ void WorldGrid::initMap()
                         b.x=p.x;
                         for(uint e1=1; e1<exitSize/2; ++e1)
                         {
-                            b.y=p.y+e1;
+                            b.y=p.y+e1+diffy;
                             p2.push_back(b);
-                            b.y=p.y-e1;
+                            b.y=p.y-e1+diffy;
                             p2.push_back(b);
                         }
 
@@ -211,7 +229,7 @@ void WorldGrid::initMap()
                 else
                 {
                     p.x=m_randF->randi(1,roomSize-1);
-                    //p.y=m_gridSizeX/2-(((k%2)*-1)+1)*roomSize/2+(k%2)*roomSize/2;
+                    p.y=m_gridSizeX/2-(((k%2)*-1)+1)*roomSize/2+(k%2)*roomSize/2;
                     //if exit size > 1, need to check if current point is at corners,
                     //if so, instead of setting points at both its sides, just
                     //set points at one of the sides
@@ -222,11 +240,11 @@ void WorldGrid::initMap()
                             Vec2 a;
                             if(p.x <= 1+exitSize/2)
                             {
-                                a=Vec2(p.x+e, p.y);
+                                a=Vec2(p.x+e+diffx, p.y);
                             }
                             else
                             {
-                                a=Vec2(p.x-e, p.y);
+                                a=Vec2(p.x-e+diffx, p.y);
                             }
                             p2.push_back(a);
                         }
@@ -239,9 +257,9 @@ void WorldGrid::initMap()
                         b.y=p.y;
                         for(uint e1=1; e1<exitSize/2; ++e1)
                         {
-                            b.x=p.x+e1;
+                            b.x=p.x+e1+diffx;
                             p2.push_back(b);
-                            b.x=p.x-e1;
+                            b.x=p.x-e1+diffx;
                             p2.push_back(b);
                         }
 
@@ -270,41 +288,39 @@ void WorldGrid::initMap()
             takenXY.insert(takenXY.end(), p2.begin(), p2.end());
 
             //takenXY.emplace_back(p2);
-            uint diffx = m_gridSizeX/2 - roomSize/2;
-            uint diffy = m_gridSizeY/2 - roomSize/2;
             if(i<numExits)
             {
-                setAt(p.x+diffx, p.y+diffy, 3);
+                setAt(p.x, p.y, 3);
                 for(auto &_p : p2)
                 {
-                    setAt(_p.x+diffx,_p.y+diffy, 3);
-                    m_exits.push_back(Vec2(p.x+diffx, p.y+diffy));
+                    setAt(_p.x,_p.y, 3);
+                    m_exits.push_back(Vec2(p.x, p.y));
                 }
             }
             else
             {
                 if(i<(numExits+numEntrances))
                 {
-                    setAt(p.x+diffx, p.y+diffy, 2);
+                    setAt(p.x, p.y, 2);
                     for(auto &_p : p2)
                     {
-                        setAt(_p.x+diffx,_p.y+diffy, 2);
-                        m_entrances.push_back(Vec2(p.x+diffx, p.y+diffy));
+                        setAt(_p.x,_p.y, 2);
+                        m_entrances.push_back(Vec2(p.x, p.y));
                     }
                 }
                 else
                 {
-                    setAt(p.x+diffx, p.y+diffy, 4);
+                    setAt(p.x, p.y, 4);
                     for(auto &_p : p2)
                     {
-                        setAt(_p.x+diffx,_p.y+diffy, 4);
-                        m_exits.push_back(Vec2(p.x+diffx, p.y+diffy));
-                        m_entrances.push_back(Vec2(p.x+diffx, p.y+diffy));
+                        setAt(_p.x,_p.y, 4);
+                        m_exits.push_back(Vec2(p.x, p.y));
+                        m_entrances.push_back(Vec2(p.x, p.y));
                     }
                 }
             }
 
-        }
+        }*/
         for(auto &c : m_cells)
         {
             if(c->m_value==1)
@@ -337,18 +353,54 @@ void WorldGrid::calcPaths()
 {
     //m_exitPaths = StarComputePaths(true);
     //m_enterPaths = StarComputePaths(false);
-    m_exitPaths = AStarPathfind(true);
-    m_enterPaths = AStarPathfind(false);
+    //m_exitPaths = AStarPathfind(true);
+    //m_enterPaths = AStarPathfind(false);
+    AStarPathfind();
 }
 
-std::vector<std::vector<std::vector<uint>>> WorldGrid::AStarPathfind(bool _type)
+void WorldGrid::AStarPathfind()
 {
-    std::vector<std::vector<std::vector<uint>>> ret;
-    ret.resize(m_cells.size());
-    std::cout<<ret.size()<<std::endl;
+    //std::vector<std::vector<std::vector<uint>>> ret;
+    //ret.resize(m_cells.size());
+    m_exitPaths.clear();
+    m_exitPaths.reserve(m_cells.size());
+    m_exitPaths.resize(m_cells.size());
+    m_enterPaths.clear();
+    m_enterPaths.reserve(m_cells.size());
+    m_enterPaths.resize(m_cells.size());
     if(m_params->nav_maxRoomDim>0)
     {
-        uint roomSize = m_randF->randi(16, m_params->nav_maxRoomDim,0);
+
+        for(uint y=0; y<m_gridSizeY; ++y)
+        {
+            for(uint x=0; x<m_gridSizeX; ++x)
+            {
+                Vec2 checkPos = Vec2(x*m_cellDimX,y*m_cellDimY);
+                if(checkBounds(checkPos,0.f,m_roomLimit))
+                {
+                    //for all exits
+                    for(uint e=0; e<m_exits.size(); ++e)
+                    {
+                        m_exitPaths.at(y*m_gridSizeX+x).reserve(m_exits.size());
+                        m_exitPaths.at(y*m_gridSizeX+x).resize(m_exits.size());
+                        m_exitPaths.at(y*m_gridSizeX+x).at(e) = m_pfinder.get()->getPath(x,y,m_exits.at(e).x,m_exits.at(e).y);
+                    }
+                }
+                else
+                {
+                    //for all exits
+                    for(uint e=0; e<m_entrances.size(); ++e)
+                    {
+                        m_enterPaths.at(y*m_gridSizeX+x).reserve(m_entrances.size());
+                        m_enterPaths.at(y*m_gridSizeX+x).resize(m_entrances.size());
+                        m_enterPaths.at(y*m_gridSizeX+x).at(e) = m_pfinder.get()->getPath(x,y,m_entrances.at(e).x,m_entrances.at(e).y);
+                    }
+                }
+            }
+
+        }
+
+        /*uint roomSize = m_randF->randi(16, m_params->nav_maxRoomDim,0);
         if(_type) //this is exits
         {
             //for exits we only search inside the room
@@ -411,9 +463,9 @@ std::vector<std::vector<std::vector<uint>>> WorldGrid::AStarPathfind(bool _type)
                     }
                 }
             }
-        }
+        }*/
     }
-    return ret;
+    //return ret;
 }
 
 std::vector<std::vector<std::vector<uint>>> WorldGrid::StarComputePaths(bool _type)
