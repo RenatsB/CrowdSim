@@ -9,7 +9,7 @@
 /// @brief Space separation and object management module
 /// @author Renats Bikmajevs
 
-
+class Pathfinder;
 ///  _______
 /// | 0 | 1 |
 /// |-------|
@@ -39,30 +39,7 @@ public:
 class WorldGrid
 {
 public:
-    WorldGrid(std::shared_ptr<Params> _prms, uint _sX, uint _sY, BoundingBox _lim)
-    {
-      if(_sX>0 && _sY>0)
-      {
-        m_gridSizeX = _sX;
-        m_gridSizeY = _sY;
-      }
-      m_limit = _lim;
-      m_params = _prms;
-      m_params = std::make_shared<Params> ();
-      m_randF = std::make_shared<RandF> ();
-      m_nmaker = std::make_shared<NameMaker> (m_randF);
-      checkBB();
-      m_cells.clear();
-      m_cells.reserve(m_gridSizeX*m_gridSizeY);
-      m_cells.resize(m_gridSizeX*m_gridSizeY);
-      initGrid();
-      initMap();
-      m_shop = std::make_shared<Shop> (m_params);
-      m_shop.get()->setExits(m_exits);
-      m_shop.get()->spawnProducts(m_roomLimit);
-      m_time = std::make_shared<Time> ();
-      spawnAgents();
-    }
+    WorldGrid(std::shared_ptr<Params> _prms, uint _sX, uint _sY, BoundingBox _lim);
     /// @brief destructor
     ~WorldGrid();
 
@@ -71,7 +48,7 @@ public:
     GridCell* cellAt(Vec2 _cell);
     void update();
     std::vector<Agent*> getAgents();
-    std::vector<BoundingBox> getWalls();
+    std::vector<GridCell*> getWalls();
     void addAgent(Agent *_a);
     void addAgent(Agent *_a, GridCell* _cell);
     uint randomToExit(uint _current) const;
@@ -86,6 +63,7 @@ private:
     void initMap();
     void spawnAgents();
     void calcPaths();
+    std::vector<std::vector<std::vector<uint>>> AStarPathfind(bool _type);
     std::vector<std::vector<std::vector<uint>>> StarComputePaths(bool _type);
     std::vector<std::vector<uint>> PathTrace(uint _x, uint _y, Vec2 _e);
     void setAt(Vec2 _cell, uint _v);
@@ -113,12 +91,13 @@ private:
     std::vector<GridCell*> m_cells;
     std::vector<Vec2> m_exits;
     std::vector<Vec2> m_entrances;
-    std::vector<BoundingBox> m_walls;
+    std::vector<GridCell*> m_walls;
     //these 2 paths will take most of the space, so store and calculate them here
     //path are stored for each cell
     std::vector<std::vector<std::vector<uint>>> m_exitPaths;
     std::vector<std::vector<std::vector<uint>>> m_enterPaths;
     std::shared_ptr<NameMaker> m_nmaker;
+    std::shared_ptr<Pathfinder> m_pfinder;
 };
 
 #endif //CROWDLIB_WORLDGRID_H_

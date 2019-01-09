@@ -12,3 +12,5 @@ HEADERS += $$files($$PWD/include/*.h)
 SOURCES += $$files($$PWD/src/*.cpp)
 
 OTHER_FILES += $$files(../README.md)
+
+QMAKE_CXXFLAGS += -g

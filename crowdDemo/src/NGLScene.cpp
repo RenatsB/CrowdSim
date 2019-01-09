@@ -148,8 +148,8 @@ void NGLScene::paintGL()
   shader->use("nglDiffuseShader");
 
   std::vector<Agent*> ags = m_world.get()->getAgents();
-  std::vector<BoundingBox> bbs = m_world.get()->getWalls();
-  for(auto a : ags)
+  std::vector<GridCell*> bbs = m_world.get()->getWalls();
+  for(auto &a : ags)
   {
       m_transform.reset();
       {
@@ -159,9 +159,10 @@ void NGLScene::paintGL()
       }
   }
   m_transform.reset();
-  for(auto b : bbs)
+  loadMatricesToShader();
+  for(auto &b : bbs)
   {
-      m_box.reset( new ngl::BBox(ngl::Vec3((b.m_maxx+b.m_minx)/2.f,0.0,(b.m_maxy+b.m_miny)/2.f),b.m_maxx-b.m_minx,b.m_maxx-b.m_minx,b.m_maxy-b.m_miny));
+      m_box.reset( new ngl::BBox(ngl::Vec3(b->m_position.x,0.0,b->m_position.y),b->m_limit.m_maxx-b->m_limit.m_minx,1.f,b->m_limit.m_maxy-b->m_limit.m_miny));
       m_box.get()->draw();
   }
 }
@@ -286,7 +287,7 @@ void NGLScene::timerEvent(QTimerEvent *_event )
             return;
         }
     }*/
-    updateScene();
+    //updateScene();
     update();
 }
 

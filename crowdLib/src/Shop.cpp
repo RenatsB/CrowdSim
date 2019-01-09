@@ -50,11 +50,11 @@ float Shop::getDistanceStress() const
     //checking against all exits. If necessary, this can be modified
     //to use space hashing if user decides to have insanely large amounts of exits
     float stress = 0.f;
-    for(auto ob : m_remp)
+    for(auto &ob : m_remp)
     {
         float minDist = 1000000.f;
         Vec2 ret;
-        for(auto ex : m_exits)
+        for(auto &ex : m_exits)
         {
             float d = ob.get()->m_pos.distance(ex);
             if(d < minDist)
@@ -74,7 +74,7 @@ float Shop::getDistanceStress() const
 void Shop::update()
 {
     std::vector<std::shared_ptr<Product>> rem;
-    for(auto i : m_products)
+    for(auto &i : m_products)
     {
         if(i.get()->m_tag == Tag::PRODUCT)
             rem.push_back(i);
@@ -82,7 +82,7 @@ void Shop::update()
     m_remp = rem;
 
     std::vector<std::shared_ptr<Product>> free;
-    for(auto u : rem)
+    for(auto &u : rem)
     {
         if(u.get()->getOwner() == nullptr)
             free.push_back(u);

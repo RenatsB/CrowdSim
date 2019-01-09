@@ -32,7 +32,6 @@ void Agent::update(std::vector<Agent*> _neighbours)
     {
         if(m_Time.get()->GetTime() >= m_timer)
         {
-            std::cout<<"agent boop 4"<<std::endl;
             switch(m_state)
             {
             case AgentState::FOLLOW : {follow();break;}
@@ -48,7 +47,6 @@ void Agent::update(std::vector<Agent*> _neighbours)
             }
         }
     }
-    std::cout<<"agent boop 5"<<std::endl;
 }
 
 void Agent::takeProduct(std::shared_ptr<Product> _tgt)
@@ -64,13 +62,10 @@ void Agent::setPosition(const Vec2 _pos)
 void Agent::makeDecision()
 {
 
-    std::cout<<"decision boop 1"<<std::endl;
     if(m_desire <= m_Params.get()->giveup_desireLvl)
     {
-        std::cout<<"decision boop 2"<<std::endl;
         if(dodont(m_Params.get()->giveup_chance))
         {
-            std::cout<<"decision boop giveup"<<std::endl;
             m_state = AgentState::FLEE;
             m_navPath.clear();
             pickRandomPtoExit();
@@ -78,20 +73,16 @@ void Agent::makeDecision()
     }
     else
     {
-        std::cout<<"decision boop 3"<<std::endl;
         if(m_aggressiveness >= m_Params->frenzy_minAggressionLvl
                 || m_mentalStability <= m_Params->frenzy_maxStabilityLvl)
         {
-            std::cout<<"decision boop 4"<<std::endl;
             if(dodont(m_Params->frenzy_chance))
             {
-                std::cout<<"decision boop frenzy"<<std::endl;
                 m_state = AgentState::ATTACKFRENZY;
                 pickClosestAgent();
             }
             else
             {
-                std::cout<<"decision boop follow"<<std::endl;
                 m_state = AgentState::FOLLOW;
                 pickRandomProduct();
                 if(m_tgt == nullptr)
@@ -100,25 +91,20 @@ void Agent::makeDecision()
         }
         else
         {
-            std::cout<<"decision boop 5"<<std::endl;
             if(m_shop.get()->getNumRemainingProducts() == 0)
             {
-                std::cout<<"decision boop fail"<<std::endl;
                 receiveFail();
             }
             else
             {
-                std::cout<<"decision boop 6"<<std::endl;
                 if(m_grid->insideRoom(m_pos))
                 {
-                    std::cout<<"decision boop inside room follow"<<std::endl;
                     m_state = AgentState::FOLLOW;
                     m_navPath.clear();
                     pickRandomProduct();
                 }
                 else
                 {
-                    std::cout<<"decision boop enter"<<std::endl;
                     m_state = AgentState::ENTER;
                     pickRandomPtoEntrance();
                 }
@@ -153,11 +139,8 @@ void Agent::receiveFail()
 {
     m_fleeOrigin = m_pos;
     m_state = AgentState::FLEE;
-    std::cout<<"receive fail boop 1"<<std::endl;
     m_navPath.clear();
-    std::cout<<"receive fail boop 2"<<std::endl;
     pickRandomPtoExit();
-    std::cout<<"receive fail boop 3"<<std::endl;
     flee();
 }
 
@@ -370,22 +353,18 @@ void Agent::walkaway()
 
 void Agent::navigate(bool _customDir)
 {
-    std::cout<<"navigate boop 1"<<std::endl;
     if(_customDir)
     {
         m_lookVector = m_tgt.get()->m_pos - m_pos;
     }
     else
     {
-        std::cout<<"navigate boop 2"<<std::endl;
         if(m_navPath.size()!=0)
         {
             m_navPoint = m_navPath.at(0);
             m_navPath.erase(m_navPath.begin());
         }
-        std::cout<<"navigate boop 3"<<std::endl;
     }
-    std::cout<<"navigate boop 4"<<std::endl;
     m_pos += m_drag;
     m_drag = Vec2(0.f,0.f);
     m_lookVector = m_navPoint - m_pos;
@@ -460,12 +439,12 @@ void Agent::pickRandomProduct()
         check = false;
     if(check)
     {
-        int randNum = m_rand.get()->randi(0,freeProducts.size(),0);
+        int randNum = m_rand.get()->randi(0,freeProducts.size()-1,0);
         m_tgt = freeProducts.at(randNum);
     }
     else
     {
-        int randNum = m_rand.get()->randi(0,products.size(),0);
+        int randNum = m_rand.get()->randi(0,products.size()-1,0);
         m_tgt = products.at(randNum);
     }
 }
@@ -477,7 +456,7 @@ void Agent::pickClosestAgent()
     //which means maximum possible distance is the length of its diagonal.
     //for simplicity we just add X and Y values here, which summ is > than diag.
     Agent* newTgt = nullptr;
-    for(auto a : m_neighbours)
+    for(auto &a : m_neighbours)
     {
         float dist = getPosition().distance(a->getPosition());
         if(dist < minDist)
@@ -491,11 +470,8 @@ void Agent::pickClosestAgent()
 
 void Agent::pickRandomPtoExit()
 {
-    std::cout<<"pickRandomPtoExit boop 1"<<std::endl;
     m_navPath.clear();
-    std::cout<<"pickRandomPtoExit boop 2"<<std::endl;
     m_navPath = m_grid->randPathToExit(m_cellID);
-    std::cout<<"pickRandomPtoExit boop 3"<<std::endl;
 }
 
 void Agent::pickRandomPtoEntrance()

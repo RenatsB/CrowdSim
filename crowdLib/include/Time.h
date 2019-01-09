@@ -17,7 +17,7 @@ private:
   std::chrono::high_resolution_clock::time_point getCurrentTime();
   void tick();
   bool m_runClock;
-  bool m_pause;
+  bool m_pause = false;
   std::chrono::high_resolution_clock m_clock;
   std::chrono::high_resolution_clock::time_point m_startTime;
   float m_prevTime;
