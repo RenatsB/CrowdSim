@@ -25,6 +25,7 @@ WorldGrid::WorldGrid(std::shared_ptr<Params> _prms, uint _sX, uint _sY,
   m_time.get()->LaunchTimer();
   m_shop = std::make_shared<Shop> (m_params);
   m_shop.get()->setExits(m_exits);
+  std::cout<<m_roomLimit.m_minx<<", "<<m_roomLimit.m_maxx<<", "<<m_roomLimit.m_miny<<", "<<m_roomLimit.m_maxy<<std::endl;
   m_shop.get()->spawnProducts(m_roomLimit);
   m_shop.get()->update();
   m_pfinder = std::make_shared<Pathfinder> (m_gridSizeX, m_gridSizeY, this);

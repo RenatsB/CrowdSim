@@ -104,8 +104,8 @@ uint nav_maxNumExits = 3;
 uint nav_maxNumEntrances = 3;
 uint nav_maxNumInouts = 2; //will be set to 1 if all 3 types of exits/entrances set to 0
 
-uint entity_numProducts = 42;
-uint entity_numAgents = 256;
+uint entity_numProducts = 5;
+uint entity_numAgents = 5;
 
 uint stress_remainingProductsForDistanceCheck = 10;
 float stress_distanceToExits = 2.f;
@@ -117,8 +117,8 @@ float power_recharge = 0.56f;
 float health_minLvl = 20.0f;
 float health_maxLvl = 100.f;
 float frenzy_stopHPtriggerLvl = 25.f;
-float speed_minLvl = 0.00001f;
-float speed_maxLvl = 0.0005f;
+float speed_minLvl = 0.15f;
+float speed_maxLvl = 0.45f;
 float charge_brakeInflRadiusCoefficient = 3.f;
 float charge_powerDraw = 0.68f;
 float punch_powerDraw = 0.3f;

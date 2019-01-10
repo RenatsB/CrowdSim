@@ -364,7 +364,62 @@ void Agent::navigate(bool _customDir)
             m_navPoint = m_navPath.at(0);
             m_navPath.erase(m_navPath.begin());
         }
+        else
+        {
+            m_state = AgentState::IDLE;
+            makeDecision();
+        }
     }
+    switch(m_state)
+    {
+    case AgentState::ATTACKFRENZY :
+    {
+        std::cout<<m_name<<" is in Frenzy"<<std::endl;
+        break;
+    }
+    case AgentState::CHARGE :
+    {
+        std::cout<<m_name<<" is Charging"<<std::endl;
+        break;
+    }
+    case AgentState::DONE :
+    {
+        std::cout<<m_name<<" is Done"<<std::endl;
+        break;
+    }
+    case AgentState::ENTER :
+    {
+        std::cout<<m_name<<" is Entering"<<std::endl;
+        break;
+    }
+    case AgentState::EXIT :
+    {
+        std::cout<<m_name<<" is Exiting"<<std::endl;
+        break;
+    }
+    case AgentState::FAILED :
+    {
+        std::cout<<m_name<<" is Failed"<<std::endl;
+        break;
+    }
+    case AgentState::FLEE :
+    {
+        std::cout<<m_name<<" is Fleeing"<<std::endl;
+        break;
+    }
+    case AgentState::FOLLOW :
+    {
+        std::cout<<m_name<<" is Following"<<std::endl;
+        break;
+    }
+    case AgentState::GIVEUP :
+    {
+        std::cout<<m_name<<" has Given Up"<<std::endl;
+        break;
+    }
+    default : break;
+    }
+
     m_pos += m_drag;
     m_drag = Vec2(0.f,0.f);
     m_lookVector = m_navPoint - m_pos;
@@ -376,6 +431,7 @@ void Agent::updateInfluences()
 {
     float maxTime = m_Params.get()->time_saleStart+m_Params.get()->time_saleDuration;
     float timeleft = maxTime-m_Time.get()->GetTime();
+
     if(timeleft <= 0.f)
     {
         receiveFail();

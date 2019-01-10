@@ -26,7 +26,8 @@ void Time::LaunchTimer()
 void Time::tick()
 {
   std::chrono::high_resolution_clock::time_point now = getCurrentTime();
-  m_time = FpMilliseconds(now-m_startTime).count();
+  //m_time = FpMilliseconds(now-m_startTime).count();
+  m_time = std::chrono::duration_cast<std::chrono::milliseconds>(now-m_startTime).count() / 1000.f;
   m_deltaTime = m_prevTime - m_time;
   m_prevTime = m_time;
 }

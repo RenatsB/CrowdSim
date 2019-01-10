@@ -45,5 +45,6 @@ else{ # note brace must be here
 LIBS += -L../crowdLib -lCrowdLib
 
 QMAKE_CXXFLAGS += -std=c++17
+QMAKE_CXXFLAGS += -O0
 
 QMAKE_RPATHDIR += $$PWD/../crowdLib
