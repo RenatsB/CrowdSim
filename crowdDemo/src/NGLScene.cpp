@@ -135,9 +135,10 @@ void NGLScene::paintGL()
    m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
 
    updateScene();
+   update();
 
    ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
-    prim->createSphere("sphere",1,40);
+    prim->createSphere("sphere",0.5,40);
 
   // grab an instance of the shader manager
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
@@ -154,6 +155,7 @@ void NGLScene::paintGL()
       m_transform.reset();
       {
           m_transform.setPosition(a->getPosition().x,0.0,a->getPosition().y);
+          //m_transform.setScale(ngl::Vec3(a->getRadius()));
           loadMatricesToShader();
           prim->draw("sphere");
       }

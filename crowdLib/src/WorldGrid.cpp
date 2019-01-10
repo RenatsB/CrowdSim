@@ -22,12 +22,14 @@ WorldGrid::WorldGrid(std::shared_ptr<Params> _prms, uint _sX, uint _sY,
   m_cells.resize(m_gridSizeX*m_gridSizeY);
   initGrid();
   initMap();
+  m_time.get()->LaunchTimer();
   m_shop = std::make_shared<Shop> (m_params);
   m_shop.get()->setExits(m_exits);
   m_shop.get()->spawnProducts(m_roomLimit);
   m_shop.get()->update();
   m_pfinder = std::make_shared<Pathfinder> (m_gridSizeX, m_gridSizeY, this);
   calcPaths();
+  m_time.get()->tick();
   spawnAgents();
 }
 /// @brief destructor
@@ -58,6 +60,7 @@ uint WorldGrid::getAt(uint _cell)
 
 void WorldGrid::update()
 {
+    m_time.get()->tick();
     for(GridCell* c : m_cells)
     {
         for(Agent* a : c->m_agentList)

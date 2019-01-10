@@ -13,13 +13,14 @@ void Time::LaunchTimer()
                 "Rep required to be floating point");
   m_startTime = m_clock.now();
   m_time = 0.f;
-  m_deltaTime = 0.f;
+  m_deltaTime = 1.f;
   m_prevTime = 0.f;
-  while(m_runClock)
+  /*while(m_runClock)
     {
       if(!m_pause)
         tick();
-    }
+    }*/
+  tick();
 }
 
 void Time::tick()
@@ -27,7 +28,7 @@ void Time::tick()
   std::chrono::high_resolution_clock::time_point now = getCurrentTime();
   m_time = FpMilliseconds(now-m_startTime).count();
   m_deltaTime = m_prevTime - m_time;
-  m_prevTime = m_prevTime - m_time;
+  m_prevTime = m_time;
 }
 
 float Time::GetTime()
