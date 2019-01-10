@@ -25,6 +25,7 @@ public:
     float getDistanceStress() const;
     void update();
     void spawnProducts(BoundingBox _bb);
+    std::vector<Vec2> getProductPositions();
 private:
     std::vector<std::shared_ptr<Product>> m_products;
     std::vector<std::shared_ptr<Product>> m_remp;

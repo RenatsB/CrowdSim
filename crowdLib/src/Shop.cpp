@@ -4,12 +4,15 @@
 
 void Shop::spawnProducts(BoundingBox _bb)
 {
-    for(uint i=0; i<m_params.get()->entity_numProducts; ++i)
+    m_products.clear();
+    m_products.reserve(m_params.get()->entity_numProducts);
+    m_products.resize(m_params.get()->entity_numProducts);
+    for(auto &p : m_products)
     {
-        std::shared_ptr<Product> p = std::make_shared<Product> ();
-        p.get()->m_tag = Tag::PRODUCT;
-        p.get()->m_pos = Vec2(m_randF.get()->randf(_bb.m_minx, _bb.m_maxx),m_randF.get()->randf(_bb.m_miny, _bb.m_maxy));
-        m_products.push_back(p);
+        p = std::make_shared<Product>();
+        p.get()->setTag(Tag::PRODUCT);
+        //p.get()->setPosition(Vec2(0.f,0.f));
+        p.get()->setPosition(Vec2(m_randF.get()->randf(_bb.m_minx, _bb.m_maxx),m_randF.get()->randf(_bb.m_miny, _bb.m_maxy)));
     }
 }
 
@@ -34,6 +37,16 @@ std::vector<std::shared_ptr<Product>> Shop::getfreeProducts() const
     return m_freep;
 }
 
+std::vector<Vec2> Shop::getProductPositions()
+{
+    std::vector<Vec2> ret;
+    for(auto &p : m_products)
+    {
+        ret.push_back(p.get()->getPosition());
+    }
+    return ret;
+}
+
 uint Shop::getNumRemainingProducts() const
 {
     return m_remp.size();
@@ -56,7 +69,7 @@ float Shop::getDistanceStress() const
         Vec2 ret;
         for(auto &ex : m_exits)
         {
-            float d = ob.get()->m_pos.distance(ex);
+            float d = ob.get()->getPosition().distance(ex);
             if(d < minDist)
             {
                 ret = ex;
@@ -76,7 +89,7 @@ void Shop::update()
     std::vector<std::shared_ptr<Product>> rem;
     for(auto &i : m_products)
     {
-        if(i.get()->m_tag == Tag::PRODUCT)
+        if(i.get()->getTag() == Tag::PRODUCT)
             rem.push_back(i);
     }
     m_remp = rem;

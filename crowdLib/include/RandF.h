@@ -4,6 +4,11 @@
 class RandF
 {
 public:
+    RandF()
+    {
+        float _seed;
+        srand(_seed);
+    }
     int randi(int r_low, int r_high, uint _t=0);
     float randf(float r_low, float r_high, uint _t=0);
 private:

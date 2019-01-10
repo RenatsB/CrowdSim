@@ -47,9 +47,13 @@ public:
     uint getAt(Vec2 _cell);
     uint getAt(uint _cell);
     GridCell* cellAt(Vec2 _cell);
+    GridCell* cellAt(uint _x, uint _y);
+    GridCell* cellAt(uint _i);
+    float getCellDim() const;
     void update();
     std::vector<Agent*> getAgents();
     std::vector<GridCell*> getWalls();
+    std::vector<Vec2> getProducts();
     void addAgent(Agent *_a);
     void addAgent(Agent *_a, GridCell* _cell);
     uint randomToExit(uint _current) const;

@@ -19,6 +19,7 @@ void Agent::initAgent(std::string _name, WorldGrid *_w)
     m_speed = m_rand.get()->randf(m_Params->speed_minLvl, m_Params->speed_maxLvl);
     m_initialValues = std::array<float,8>{m_aggressiveness,m_desire,m_power,m_resolve,
     m_mentalStability,m_desperation,m_health,m_speed};
+    m_weight = m_rand.get()->randf(m_Params.get()->weight_minLvl, m_Params.get()->weight_maxLvl)/m_Params.get()->weight_maxLvl;
 }
 
 void Agent::update(std::vector<Agent*> _neighbours)
@@ -39,10 +40,9 @@ void Agent::update(std::vector<Agent*> _neighbours)
             case AgentState::CHARGE : {charge();break;}
             case AgentState::ATTACKFRENZY : {frenzy();break;}
             case AgentState::GIVEUP : {flee();break;}
-            case AgentState::EXIT : {exit(false);break;}
-            case AgentState::ENTER : {enter();break;}
-            case AgentState::DONE : {wait();break;}
-            case AgentState::FAILED : {wait();break;}
+            case AgentState::BUY : {buy();break;}
+            case AgentState::FAILED : {fail();break;}
+            case AgentState::SUCCESS : {wait();break;}
             default : {makeDecision();break;}
             }
         }
@@ -54,21 +54,17 @@ void Agent::takeProduct(std::shared_ptr<Product> _tgt)
     _tgt.get()->setOwner(this);
 }
 
-void Agent::setPosition(const Vec2 _pos)
-{
-    m_pos = _pos;
-}
-
 void Agent::makeDecision()
 {
-
     if(m_desire <= m_Params.get()->giveup_desireLvl)
     {
         if(dodont(m_Params.get()->giveup_chance))
         {
-            m_state = AgentState::FLEE;
-            m_navPath.clear();
-            pickRandomPtoExit();
+            m_state = AgentState::GIVEUP;
+        }
+        else
+        {
+            m_state = AgentState::FOLLOW;
         }
     }
     else
@@ -79,35 +75,21 @@ void Agent::makeDecision()
             if(dodont(m_Params->frenzy_chance))
             {
                 m_state = AgentState::ATTACKFRENZY;
-                pickClosestAgent();
             }
             else
             {
                 m_state = AgentState::FOLLOW;
-                pickRandomProduct();
-                if(m_tgt == nullptr)
-                    m_state = AgentState::FLEE;
             }
         }
         else
         {
             if(m_shop.get()->getNumRemainingProducts() == 0)
             {
-                receiveFail();
+                m_state = AgentState::FAILED;
             }
             else
             {
-                if(m_grid->insideRoom(m_pos))
-                {
-                    m_state = AgentState::FOLLOW;
-                    m_navPath.clear();
-                    pickRandomProduct();
-                }
-                else
-                {
-                    m_state = AgentState::ENTER;
-                    pickRandomPtoEntrance();
-                }
+                m_state = AgentState::FOLLOW;
             }
         }
     }
@@ -130,18 +112,56 @@ void Agent::getHit(float _power)
     //the more instable the Agent is, the less sensitive it will be
     m_health-=_power*m_mentalStability; //take damage
     if(m_health<=0)
-    {m_fleeOrigin = m_pos; m_state = AgentState::FLEE; flee();}
+    {
+        m_state = AgentState::FLEE;
+    }
     else
     {m_speed = m_initialValues.at(7)*m_health;}
 }
 
 void Agent::receiveFail()
 {
-    m_fleeOrigin = m_pos;
-    m_state = AgentState::FLEE;
-    m_navPath.clear();
-    pickRandomPtoExit();
-    flee();
+    m_state = AgentState::FAILED;
+}
+
+void Agent::fail()
+{
+    if(m_grid->insideRoom(m_pos))
+    {
+        if(m_navPath.empty())
+        {
+            pickRandomPtoExit();
+        }
+        navigate(MoveType::PATH);
+    }
+    else
+    {
+        navigate(MoveType::OUT);
+    }
+}
+
+void Agent::buy()
+{
+    if(m_grid->insideRoom(m_pos))
+    {
+        if(m_navPath.empty())
+        {
+            pickRandomPtoExit();
+        }
+        navigate(MoveType::PATH);
+    }
+    else
+    {
+        navigate(MoveType::OUT);
+    }
+    if(m_tgt != nullptr && m_tgt.get()->getOwner() == this)
+    {
+        m_tgt.get()->addPosition(m_lookVector*m_speed*m_Time.get()->DeltaTime());
+    }
+    else
+    {
+        m_state = AgentState::FOLLOW;
+    }
 }
 
 void Agent::wait()
@@ -158,7 +178,7 @@ void Agent::punch()
 {
     if(m_attackTgt != nullptr)
     {
-        if(m_pos.distance(m_attackTgt->m_pos) <= m_influenceRadius*2.f)
+        if(m_pos.distance(m_attackTgt->getPosition()) <= m_influenceRadius*2.f)
         {
             if(m_Params->punch_powerDraw <= m_power)
             {
@@ -184,8 +204,9 @@ void Agent::punch()
 
 void Agent::frenzy()
 {
-    if(m_tgt == nullptr)
+    if(m_tgt == nullptr || m_tgt.get()->getTag()!=Tag::AGENT)
     {
+        m_tgt = nullptr;
         pickClosestAgent();
     }
     else
@@ -230,7 +251,7 @@ void Agent::charge()
         }
         else
         {
-            m_lookVector = m_tgt.get()->m_pos-m_pos;
+            m_lookVector = m_tgt.get()->getPosition()-m_pos;
             float tgtDist = m_lookVector.magnitude();
             float coefficient = 1.f;
             float minDist = m_influenceRadius*m_Params->charge_brakeInflRadiusCoefficient;
@@ -238,9 +259,8 @@ void Agent::charge()
             {
                 if(tgtDist<=m_influenceRadius*1.1f)
                 {
-                    m_state = AgentState::EXIT;
+                    m_state = AgentState::BUY;
                     takeProduct(m_tgt);
-                    exit(true);
                 }
                 coefficient = tgtDist/minDist;
             }
@@ -248,7 +268,7 @@ void Agent::charge()
                      +m_initialValues.at(7)*(m_health/m_initialValues.at(6))
                      *0.5f*(m_aggressiveness+m_desire+m_desperation))*coefficient;
             m_power -= m_Params->charge_powerDraw;
-            navigate(true);
+            navigate(MoveType::TARGET);
         }
     }
 }
@@ -257,13 +277,18 @@ void Agent::flee()
 {
     m_speed = m_initialValues.at(7)*(m_health/m_initialValues.at(6));
 
-    if(!m_grid->insideRoom(m_pos))
+    if(m_grid->insideRoom(m_pos))
     {
-        m_state = AgentState::WALKAWAY;
-        m_navPath.clear();
-        m_navPoint = (m_pos - m_grid->getGridMidpoint())*1000.f;
+        if(m_navPath.empty())
+        {
+            pickRandomPtoExit();
+        }
+        navigate(MoveType::PATH);
     }
-    navigate(false);
+    else
+    {
+        navigate(MoveType::OUT);
+    }
 }
 
 void Agent::follow()
@@ -273,8 +298,7 @@ void Agent::follow()
         pickRandomProduct();
         if(m_tgt == nullptr)
         {
-            m_state = AgentState::FLEE;
-            pickRandomPtoExit();
+            m_state = AgentState::FAILED;
             wait(1.5f);
         }
         else
@@ -287,119 +311,73 @@ void Agent::follow()
         m_speed = m_initialValues.at(7)*(m_health/m_initialValues.at(6))
                  +m_initialValues.at(7)*(m_desire+m_desperation
                  +m_resolve*m_aggressiveness)*(m_health/m_initialValues.at(6));
-        navigate(true);
-    }
-}
-
-void Agent::enter()
-{
-    m_speed = m_initialValues.at(7)*(m_health/m_initialValues.at(6))
-             +m_initialValues.at(7)*(m_desire+m_desperation
-             +m_resolve+m_aggressiveness)*(m_health/m_initialValues.at(6));
-    navigate(false);
-
-}
-
-void Agent::exit(bool _carryProduct)
-{
-    if(_carryProduct)
-    {
-        if(m_tgt.get()->getOwner() != this)
+        if(m_grid->insideRoom(m_pos))
         {
-            m_attackTgt = m_tgt.get()->getOwner();
-            punch();
-            takeProduct(m_tgt);
-            exit(true);
+            navigate(MoveType::TARGET);
         }
         else
         {
-            m_speed = m_initialValues.at(7)*(m_health/m_initialValues.at(6))
-                     +m_initialValues.at(7)*(m_desire+m_desperation
-                     +m_resolve+m_aggressiveness)*(m_health/m_initialValues.at(6));
-            navigate(false);
-            m_tgt.get()->m_pos+=m_lookVector*m_speed*m_Time.get()->DeltaTime();
+            if(m_navPath.empty())
+            {
+                pickRandomPtoEntrance();
+            }
+            navigate(MoveType::PATH);
         }
-    }
-    else
-    {
-        m_speed = m_initialValues.at(7)*(m_health/m_initialValues.at(6))
-                 +m_initialValues.at(7)*(m_desire+m_desperation
-                 +m_resolve+m_aggressiveness)*(m_health/m_initialValues.at(6));
-        navigate(false);
-        if(m_tgt != nullptr && m_tgt.get()->getOwner() == this)
-        {
-            m_tgt.get()->m_pos+=m_lookVector*m_speed*m_Time.get()->DeltaTime();
-        }
-    }
-    if(!m_grid->insideRoom(m_pos))
-    {
-        m_state = AgentState::WALKAWAY;
-        m_navPath.clear();
-        m_navPoint = (m_pos - m_grid->getGridMidpoint())*1000.f;
+
     }
 }
 
-void Agent::walkaway()
+void Agent::navigate(MoveType _m)
 {
-    m_speed = m_initialValues.at(7)*(m_health/m_initialValues.at(6))
-             +m_initialValues.at(7)*(m_desire+m_desperation
-             +m_resolve+m_aggressiveness)*(m_health/m_initialValues.at(6));
-    navigate(false);
-    if(m_tgt != nullptr && m_tgt.get()->getOwner() == this)
+    switch(_m)
     {
-        m_tgt.get()->m_pos+=m_lookVector*m_speed*m_Time.get()->DeltaTime();
-    }
-}
-
-void Agent::navigate(bool _customDir)
-{
-    if(_customDir)
+    case MoveType::PATH :
     {
-        m_lookVector = m_tgt.get()->m_pos - m_pos;
-    }
-    else
-    {
-        if(m_navPath.size()!=0)
+        if(!m_navPath.empty())
         {
-            m_navPoint = m_navPath.at(0);
-            m_navPath.erase(m_navPath.begin());
+            if(m_pos.distance(m_navPoint)<=m_grid->getCellDim())
+            {
+                if(!m_navPath.empty())
+                {
+                    m_navPoint = m_grid->cellAt(m_navPath.front())->m_position;
+                    m_navPath.erase(m_navPath.begin());
+                }
+                else
+                {
+                    m_lookVector = m_tgt.get()->getPosition() - m_pos;
+                }
+            }
         }
-        else
-        {
-            m_state = AgentState::IDLE;
-            makeDecision();
-        }
-    }
-    switch(m_state)
-    {
-    case AgentState::ATTACKFRENZY :
-    {
-        std::cout<<m_name<<" is in Frenzy"<<std::endl;
+        m_lookVector = m_navPoint - m_pos;
         break;
     }
+    case MoveType::TARGET :
+    {
+        m_lookVector = m_tgt.get()->getPosition() - m_pos;
+        break;
+    }
+    case MoveType::OUT :
+    {
+        m_lookVector = m_pos - m_grid->getGridMidpoint();
+        break;
+    }
+    case MoveType::CUSTOM :
+    {
+        m_lookVector = m_navPoint - m_pos;
+        break;
+    }
+    }
+
+    switch(m_state)
+    {
     case AgentState::CHARGE :
     {
         std::cout<<m_name<<" is Charging"<<std::endl;
         break;
     }
-    case AgentState::DONE :
-    {
-        std::cout<<m_name<<" is Done"<<std::endl;
-        break;
-    }
-    case AgentState::ENTER :
-    {
-        std::cout<<m_name<<" is Entering"<<std::endl;
-        break;
-    }
-    case AgentState::EXIT :
-    {
-        std::cout<<m_name<<" is Exiting"<<std::endl;
-        break;
-    }
     case AgentState::FAILED :
     {
-        std::cout<<m_name<<" is Failed"<<std::endl;
+        std::cout<<m_name<<" has Failed"<<std::endl;
         break;
     }
     case AgentState::FLEE :
@@ -409,20 +387,26 @@ void Agent::navigate(bool _customDir)
     }
     case AgentState::FOLLOW :
     {
-        std::cout<<m_name<<" is Following"<<std::endl;
+        std::cout<<m_name<<" is Following in ";
+        if(_m == MoveType::PATH)
+            std::cout<<"PATH";
+        if(_m == MoveType::TARGET)
+            std::cout<<"TARGET";
+        if(_m == MoveType::OUT)
+            std::cout<<"OUT";
+        if(_m == MoveType::CUSTOM)
+            std::cout<<"CUSTOM";
+        std::cout<<" mode"<<std::endl;
         break;
     }
     case AgentState::GIVEUP :
     {
-        std::cout<<m_name<<" has Given Up"<<std::endl;
         break;
     }
-    default : break;
+    default : {break;}
     }
-
     m_pos += m_drag;
     m_drag = Vec2(0.f,0.f);
-    m_lookVector = m_navPoint - m_pos;
     m_lookVector.normalize();
     m_pos += m_lookVector*m_speed*m_Time.get()->DeltaTime();
 }
@@ -447,8 +431,8 @@ void Agent::updateInfluences()
 
     m_desperation = m_initialValues.at(5) + (m_Params.get()->desperation_maxLvl-m_initialValues.at(5))*stress;
     m_resolve = m_initialValues.at(3) + (m_Params.get()->resolve_maxLvl-m_initialValues.at(3))*stress;
-    m_influenceRadius = 1.f+m_weight*((m_health/m_Params.get()->health_maxLvl)
-                                      +(m_power/m_Params.get()->power_maxLvl));
+    m_influenceRadius = (m_weight/(m_grid->getKillRadius()))*(((m_health/m_Params.get()->health_maxLvl)
+                                      +(m_power/m_Params.get()->power_maxLvl))/2.f);
     //This probably needs explanation:
     //Red channel describes how angry the Agent is. Rule: without energy anger is useless
     //Green channel describes how mentally stable the Agent is. Rule: more desperation->less control
@@ -490,10 +474,8 @@ void Agent::pickRandomProduct()
     std::vector<std::shared_ptr<Product>> freeProducts;
     products = m_shop.get()->getRemainingProducts();
     freeProducts = m_shop.get()->getfreeProducts();
-    bool check = false;
-    if(freeProducts.size() == 0)
-        check = false;
-    if(check)
+
+    if(!freeProducts.empty())
     {
         int randNum = m_rand.get()->randi(0,freeProducts.size()-1,0);
         m_tgt = freeProducts.at(randNum);
@@ -527,12 +509,14 @@ void Agent::pickClosestAgent()
 void Agent::pickRandomPtoExit()
 {
     m_navPath.clear();
+    std::cout<<m_name<<" picked path to Exit"<<std::endl;
     m_navPath = m_grid->randPathToExit(m_cellID);
 }
 
 void Agent::pickRandomPtoEntrance()
 {
     m_navPath.clear();
+    std::cout<<m_name<<" picked path to Entrance"<<std::endl;
     m_navPath = m_grid->randPathToEntrance(m_cellID);
 }
 

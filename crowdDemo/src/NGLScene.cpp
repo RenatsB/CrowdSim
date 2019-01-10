@@ -71,7 +71,9 @@ void NGLScene::initializeGL()
   glEnable(GL_DEPTH_TEST); // for removal of hidden surfaces
 
   ngl::VAOPrimitives *prim =  ngl::VAOPrimitives::instance();
-  prim->createSphere("sphere",1.0f,40.0f);
+  prim->createSphere("sphere",0.5f,40.0f);
+  prim->createTorus("product",0.2,0.6,18,18);
+  //prim->createSphere("product",0.3f,20.0f);
   //prim->loadBinary("cube", "./models/cube.obj", 0);
 
   //m_bbox->setDrawMode(GL_LINE);
@@ -138,7 +140,7 @@ void NGLScene::paintGL()
    update();
 
    ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
-    prim->createSphere("sphere",0.5,40);
+    //prim->createSphere("sphere",0.5,40);
 
   // grab an instance of the shader manager
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
@@ -150,14 +152,27 @@ void NGLScene::paintGL()
 
   std::vector<Agent*> ags = m_world.get()->getAgents();
   std::vector<GridCell*> bbs = m_world.get()->getWalls();
+  std::vector<Vec2> prs = m_world.get()->getProducts();
   for(auto &a : ags)
   {
       m_transform.reset();
       {
           m_transform.setPosition(a->getPosition().x,0.0,a->getPosition().y);
-          //m_transform.setScale(ngl::Vec3(a->getRadius()));
+          m_transform.setScale(a->getWeight(),a->getWeight(),a->getWeight());
           loadMatricesToShader();
           prim->draw("sphere");
+      }
+  }
+  m_transform.reset();
+  loadMatricesToShader();
+  for(auto &p : prs)
+  {
+      m_transform.reset();
+      {
+          m_transform.setPosition(p.x,0.0,p.y);
+          loadMatricesToShader();
+          prim->draw("product");
+          //std::cout<<p.x<<", "<<p.y<<std::endl;
       }
   }
   m_transform.reset();

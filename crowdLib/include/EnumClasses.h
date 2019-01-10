@@ -8,13 +8,20 @@ enum class AgentState
     CHARGE,
     FLEE,
     GIVEUP,
-    EXIT,
-    ENTER,
-    WALKAWAY,
-    DONE,
+    BUY,
     FAILED,
+    SUCCESS,
     IDLE
 };
+
+enum class MoveType
+{
+    PATH,
+    OUT,
+    TARGET,
+    CUSTOM
+};
+
 enum class Tag
 {
     AGENT,

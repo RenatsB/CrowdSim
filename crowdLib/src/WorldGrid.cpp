@@ -25,7 +25,6 @@ WorldGrid::WorldGrid(std::shared_ptr<Params> _prms, uint _sX, uint _sY,
   m_time.get()->LaunchTimer();
   m_shop = std::make_shared<Shop> (m_params);
   m_shop.get()->setExits(m_exits);
-  std::cout<<m_roomLimit.m_minx<<", "<<m_roomLimit.m_maxx<<", "<<m_roomLimit.m_miny<<", "<<m_roomLimit.m_maxy<<std::endl;
   m_shop.get()->spawnProducts(m_roomLimit);
   m_shop.get()->update();
   m_pfinder = std::make_shared<Pathfinder> (m_gridSizeX, m_gridSizeY, this);
@@ -44,9 +43,24 @@ WorldGrid::~WorldGrid()
     m_cells.clear();
 }
 
+float WorldGrid::getCellDim() const
+{
+    return m_cellDimX;
+}
+
+GridCell* WorldGrid::cellAt(uint _i)
+{
+    return m_cells.at(_i);
+}
+
 GridCell* WorldGrid::cellAt(Vec2 _cell)
 {
-    return m_cells.at(_cell.y*m_gridSizeX+_cell.y);
+    return m_cells.at(_cell.y*m_gridSizeX+_cell.x);
+}
+
+GridCell* WorldGrid::cellAt(uint _x, uint _y)
+{
+    return m_cells.at(_y*m_gridSizeX+_x);
 }
 
 uint WorldGrid::getAt(Vec2 _cell)
@@ -123,28 +137,23 @@ void WorldGrid::initMap()
     if(m_params->nav_maxRoomDim>0)
     {
         uint roomSize = m_randF->randi(16, m_params->nav_maxRoomDim,0);
+        std::cout<<roomSize<<std::endl;
 
         //make walls
         for(uint y=m_gridSizeY/2-roomSize/2; y<m_gridSizeY/2+roomSize/2; ++y)
         {
             setAt(m_gridSizeX/2-roomSize/2,y,1); //  set  |    |
             setAt(m_gridSizeX/2+roomSize/2,y,1); //       |    |
-            if(y==m_gridSizeY/2)
-            {
-                m_roomLimit.m_minx = cellAt(Vec2(m_gridSizeX/2-roomSize/2,y))->m_limit.m_minx;
-                m_roomLimit.m_maxx = cellAt(Vec2(m_gridSizeX/2+roomSize/2,y))->m_limit.m_maxx;
-            }
         }
         for(uint x=m_gridSizeX/2-roomSize/2; x<m_gridSizeX/2+roomSize/2; ++x)
         {
             setAt(x,m_gridSizeY/2-roomSize/2,1); //  set  ------
             setAt(x,m_gridSizeY/2+roomSize/2,1); //       ------
-            if(x==m_gridSizeX/2)
-            {
-                m_roomLimit.m_miny = cellAt(Vec2(x,m_gridSizeY/2-roomSize/2))->m_limit.m_miny;
-                m_roomLimit.m_maxy = cellAt(Vec2(x,m_gridSizeY/2+roomSize/2))->m_limit.m_maxy;
-            }
         }
+        m_roomLimit.m_minx = cellAt(Vec2(m_gridSizeX/2-roomSize/2,m_gridSizeY/2))->m_limit.m_minx;
+        m_roomLimit.m_maxx = cellAt(Vec2(m_gridSizeX/2+roomSize/2,m_gridSizeY/2))->m_limit.m_maxx;
+        m_roomLimit.m_miny = cellAt(Vec2(m_gridSizeX/2,m_gridSizeY/2-roomSize/2))->m_limit.m_miny;
+        m_roomLimit.m_maxy = cellAt(Vec2(m_gridSizeX/2,m_gridSizeY/2+roomSize/2))->m_limit.m_maxy;
 
         m_exits.clear();
         m_entrances.clear();
@@ -377,10 +386,35 @@ void WorldGrid::AStarPathfind()
 
         for(uint y=0; y<m_gridSizeY; ++y)
         {
+            for(uint x=0; x<m_gridSizeY; ++x)
+            {
+                Vec2 checkPos = Vec2(x*m_cellDimX,y*m_cellDimY);
+                for(uint e=0; e<m_exits.size(); ++e)
+                {
+                    if(insideRoom(checkPos))
+                    {
+                        m_exitPaths.at(y*m_gridSizeX+x).reserve(m_exits.size());
+                        m_exitPaths.at(y*m_gridSizeX+x).resize(m_exits.size());
+                        m_exitPaths.at(y*m_gridSizeX+x).at(e) = m_pfinder.get()->getPath(x,y,m_exits.at(e).x,m_exits.at(e).y);
+                    }
+                    else
+                    {
+                        m_enterPaths.at(y*m_gridSizeX+x).reserve(m_entrances.size());
+                        m_enterPaths.at(y*m_gridSizeX+x).resize(m_entrances.size());
+                        m_enterPaths.at(y*m_gridSizeX+x).at(e) = m_pfinder.get()->getPath(x,y,m_entrances.at(e).x,m_entrances.at(e).y);
+                    }
+                }
+
+
+            }
+        }
+    }
+        /*for(uint y=0; y<m_gridSizeY; ++y)
+        {
             for(uint x=0; x<m_gridSizeX; ++x)
             {
                 Vec2 checkPos = Vec2(x*m_cellDimX,y*m_cellDimY);
-                if(checkBounds(checkPos,0.f,m_roomLimit))
+                if(insideRoom(checkPos))
                 {
                     //for all exits
                     for(uint e=0; e<m_exits.size(); ++e)
@@ -402,7 +436,7 @@ void WorldGrid::AStarPathfind()
                 }
             }
 
-        }
+        }*/
 
         /*uint roomSize = m_randF->randi(16, m_params->nav_maxRoomDim,0);
         if(_type) //this is exits
@@ -468,7 +502,7 @@ void WorldGrid::AStarPathfind()
                 }
             }
         }*/
-    }
+    //}
     //return ret;
 }
 
@@ -834,9 +868,9 @@ std::vector<uint> WorldGrid::randPathToEntrance(uint _current) const
 
 void WorldGrid::checkCollisionOnNode(GridCell* _cell)
 {
-    for(auto &a1 : _cell->m_agentList)
+    for(auto a1 : _cell->m_agentList)
     {
-        for(auto &a2 : _cell->m_agentList)
+        for(auto a2 : _cell->m_agentList)
         {
             if(a1 != a2)
             {
@@ -861,7 +895,11 @@ void WorldGrid::checkCollisionOnNode(GridCell* _cell)
 
 bool WorldGrid::insideRoom(Vec2 _pos)
 {
-    return checkBounds(_pos, 0.f, m_roomLimit);
+    return (_pos.x > (float)m_roomLimit.m_maxx &&
+            _pos.x < (float)m_roomLimit.m_minx &&
+            _pos.y > (float)m_roomLimit.m_maxy &&
+            _pos.y < (float)m_roomLimit.m_miny
+            );
 }
 
 Vec2 WorldGrid::getGridMidpoint()
@@ -891,4 +929,9 @@ std::vector<Agent*> WorldGrid::getAgents()
 std::vector<GridCell*> WorldGrid::getWalls()
 {
     return m_walls;
+}
+
+std::vector<Vec2> WorldGrid::getProducts()
+{
+    return m_shop.get()->getProductPositions();
 }

@@ -73,33 +73,33 @@ Vec2 operator*=(const float& rhs){return Vec2(this->x*=rhs, this->y*=rhs);}
 /// @brief Calculate distance between this and _tgt
 /// @param _tgt target position
 //-----------------------------------------------------------------------------------------------------
-float distance (const Vec2 *_tgt);
+float distance (const Vec2 *_tgt) const;
 //-----------------------------------------------------------------------------------------------------
 /// @brief Calculate distance between this and _tgt
 /// @param _tgt target position
 //-----------------------------------------------------------------------------------------------------
-float distance (const Vec2 &_tgt);
+float distance (const Vec2 &_tgt) const;
 //-----------------------------------------------------------------------------------------------------
 /// @brief Calculate distance between a and b
 /// @param _a start point
 /// @param _b end point
 //-----------------------------------------------------------------------------------------------------
-float distance(Vec2 *_a, Vec2 *_b);
+float distance(Vec2 *_a, Vec2 *_b) const;
 //-----------------------------------------------------------------------------------------------------
 /// @brief Calculate distance between a and b (by reference)
 /// @param _a start point
 /// @param _b end point
 //-----------------------------------------------------------------------------------------------------
-float distance(Vec2 &_a, Vec2 &_b);
+float distance(Vec2 &_a, Vec2 &_b) const;
 //-----------------------------------------------------------------------------------------------------
 /// @brief Calculate the length of a vector
 /// @param _v reference vector
 //-----------------------------------------------------------------------------------------------------
-float magnitude(Vec2 &_v);
+float magnitude(Vec2 &_v) const;
 //-----------------------------------------------------------------------------------------------------
 /// @brief Calculate the length of this vector
 //-----------------------------------------------------------------------------------------------------
-float magnitude();
+float magnitude() const;
 //-----------------------------------------------------------------------------------------------------
 /// @brief Normalize a vector
 /// @param _v reference vector

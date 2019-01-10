@@ -44,7 +44,7 @@ Pathfinder::Pathfinder(uint _sX, uint _sY, WorldGrid *_g)
 std::vector<uint> Pathfinder::getPath(const uint &xS, const uint &yS,const uint &xF, const uint &yF)
 {
     std::vector<uint> retRoute;
-    retRoute.push_back(yS*sizeX+xS); //push start
+    //retRoute.push_back(yS*sizeX+xS); //push start
 
     std::string route=PathFind(xS, yS, xF, yF);
 
@@ -56,11 +56,13 @@ std::vector<uint> Pathfinder::getPath(const uint &xS, const uint &yS,const uint 
         int y=yS;
         for(uint i=0;i<route.length();i++)
         {
-            c =route.at(i);
+            c=route.at(i);
             j=atoi(&c);
             x=x+dx[j];
             y=y+dy[j];
             retRoute.push_back(y*sizeX+x);
+            if(retRoute.back() >= 42*42)
+                retRoute.pop_back();
         }
 
     }

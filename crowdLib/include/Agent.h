@@ -8,7 +8,7 @@
 #include "RandF.h"
 class WorldGrid;
 
-class Agent: private Object
+class Agent: public Object
 {
 public:
 Agent(std::string _name, WorldGrid* _g, std::shared_ptr<Shop> _s, std::shared_ptr<Time> _t, std::shared_ptr<Params> _p, std::shared_ptr<RandF> _r)
@@ -21,7 +21,6 @@ Agent(std::string _name, WorldGrid* _g, std::shared_ptr<Shop> _s, std::shared_pt
     initAgent(_name, _g);
 }
 void initAgent(std::string _name, WorldGrid* _w);
-void setPosition(const Vec2 _pos);
 void setCell(uint _id);
 void setDrag(float _x, float _y);
 void makeDecision();
@@ -41,15 +40,18 @@ void pickRandomPtoEntrance();
 void pickRandomCellToExit();
 void pickRandomCellToEntrance();
 void takeProduct(std::shared_ptr<Product> _tgt);
+void fail();
+void giveUp();
 void punch();
 void charge();
 void follow();
 void flee();
-void navigate(bool _customDir = false);
-void enter();
-void exit(bool _carryProduct);
-void walkaway();
-void finish();
+void navigate(MoveType _m = MoveType::PATH);
+void buy();
+//void enter();
+//void exit(bool _carryProduct);
+//void walkaway();
+//void finish();
 void wait();
 void wait(float _seconds);
 bool dodont(const float _chanceZeroToOne);

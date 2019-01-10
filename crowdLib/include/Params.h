@@ -117,8 +117,8 @@ float power_recharge = 0.56f;
 float health_minLvl = 20.0f;
 float health_maxLvl = 100.f;
 float frenzy_stopHPtriggerLvl = 25.f;
-float speed_minLvl = 0.15f;
-float speed_maxLvl = 0.45f;
+float speed_minLvl = 0.35f;
+float speed_maxLvl = 0.85f;
 float charge_brakeInflRadiusCoefficient = 3.f;
 float charge_powerDraw = 0.68f;
 float punch_powerDraw = 0.3f;
@@ -141,5 +141,7 @@ float frenzy_minAggressionLvl = 0.85f;
 float frenzy_maxStabilityLvl = 0.4f;
 float frenzy_chance = 0.2f;
 float frenzy_stopChance = 0.35f;
+float weight_minLvl = 40.f;
+float weight_maxLvl = 120.f;
 };
 #endif //CROWDLIB_PARAMS_H_
