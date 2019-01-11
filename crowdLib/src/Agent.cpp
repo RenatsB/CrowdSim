@@ -61,11 +61,11 @@ void Agent::makeDecision()
     {
         if(dodont(m_Params.get()->giveup_chance))
         {
-            m_state = AgentState::GIVEUP;
+            changeState(AgentState::GIVEUP);
         }
         else
         {
-            m_state = AgentState::FOLLOW;
+            changeState(AgentState::FOLLOW);
         }
     }
     else
@@ -75,22 +75,22 @@ void Agent::makeDecision()
         {
             if(dodont(m_Params->frenzy_chance))
             {
-                m_state = AgentState::ATTACKFRENZY;
+                changeState(AgentState::ATTACKFRENZY);
             }
             else
             {
-                m_state = AgentState::FOLLOW;
+                changeState(AgentState::FOLLOW);
             }
         }
         else
         {
             if(m_shop.get()->getNumRemainingProducts() == 0)
             {
-                m_state = AgentState::FAILED;
+                changeState(AgentState::FAILED);
             }
             else
             {
-                m_state = AgentState::FOLLOW;
+                changeState(AgentState::FOLLOW);
             }
         }
     }
@@ -114,7 +114,7 @@ void Agent::getHit(float _power)
     m_health-=_power*m_mentalStability; //take damage
     if(m_health<=0)
     {
-        m_state = AgentState::FLEE;
+        changeState(AgentState::FLEE);
     }
     else
     {m_speed = m_initialValues.at(7)*m_health;}
@@ -122,8 +122,7 @@ void Agent::getHit(float _power)
 
 void Agent::receiveFail()
 {
-    m_state = AgentState::FAILED;
-    m_navPath.clear();
+    changeState(AgentState::FAILED);
 }
 
 void Agent::fail()
@@ -163,12 +162,12 @@ void Agent::buy()
         }
         else
         {
-            m_state = AgentState::FOLLOW;
+            changeState(AgentState::FOLLOW);
         }
     }
     else
     {
-        m_state = AgentState::SUCCESS;
+        changeState(AgentState::SUCCESS);
         navigate(MoveType::OUT);
         m_tgt.get()->setPosition(m_pos+m_grabOffset);
     }
@@ -200,7 +199,7 @@ void Agent::punch()
             {
                 if(m_state == AgentState::ATTACKFRENZY)
                 {
-                    m_state = AgentState::IDLE;
+                    changeState(AgentState::IDLE);
                     wait(2.f);
                 }
             }
@@ -230,7 +229,7 @@ void Agent::frenzy()
             }
             else
             {
-                m_state = AgentState::IDLE;
+                changeState(AgentState::IDLE);
                 wait(3.f);
             }
         }
@@ -244,7 +243,7 @@ void Agent::charge()
         pickRandomProduct();
         if(m_tgt == nullptr)
         {
-            m_state = AgentState::FLEE;
+            changeState(AgentState::FLEE);
             pickRandomPtoExit();
             wait(4.f);
         }
@@ -257,7 +256,7 @@ void Agent::charge()
     {
         if(m_power < m_Params->charge_powerDraw)
         {
-            m_state = AgentState::FOLLOW;
+            changeState(AgentState::FOLLOW);
             wait(1.5f);
         }
         else
@@ -270,7 +269,7 @@ void Agent::charge()
             {
                 if(tgtDist<=m_influenceRadius*1.1f)
                 {
-                    m_state = AgentState::BUY;
+                    changeState(AgentState::BUY);
                     takeProduct(m_tgt);
                 }
                 coefficient = tgtDist/minDist;
@@ -309,7 +308,7 @@ void Agent::follow()
         pickRandomProduct();
         if(m_tgt == nullptr)
         {
-            m_state = AgentState::FAILED;
+            changeState(AgentState::FAILED);
             wait(1.5f);
         }
         else
@@ -327,7 +326,7 @@ void Agent::follow()
             navigate(MoveType::TARGET);
             if(m_pos.distance(m_tgt.get()->getPosition()) <= m_influenceRadius*1.1f)
             {
-                m_state = AgentState::BUY;
+                changeState(AgentState::BUY);
                 takeProduct(m_tgt);
                 pickRandomPtoExit();
             }
@@ -354,7 +353,7 @@ void Agent::navigate(MoveType _m)
         {
             if(m_navPoint==m_navPath.at(0))
             {
-                if(m_pos.distance(m_navPoint)<=m_grid->getCellDim())
+                if(m_pos.distance(m_navPoint)<=1.f)
                 {
                     if(m_navPath.size()<2)
                     {
@@ -369,7 +368,7 @@ void Agent::navigate(MoveType _m)
             }
             else
             {
-                m_navPoint = m_grid->cellAt(m_navPath.front())->m_position;
+                m_navPoint = m_grid->cellAt(m_navPath.at(0))->m_position;
             }
         }
         m_lookVector = m_navPoint - m_pos;
@@ -566,10 +565,11 @@ void Agent::setCell(Vec2 _id)
     m_cellID = _id;
 }
 
-
-
-
-
+void Agent::changeState(AgentState _s)
+{
+    m_state = _s;
+    m_navPath.clear();
+}
 
 
 

@@ -104,8 +104,8 @@ uint nav_maxNumExits = 3;
 uint nav_maxNumEntrances = 3;
 uint nav_maxNumInouts = 2; //will be set to 1 if all 3 types of exits/entrances set to 0
 
-uint entity_numProducts = 5;
-uint entity_numAgents = 5;
+uint entity_numProducts = 75;
+uint entity_numAgents = 300;
 
 uint stress_remainingProductsForDistanceCheck = 10;
 float stress_distanceToExits = 2.f;

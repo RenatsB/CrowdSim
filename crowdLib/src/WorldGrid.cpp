@@ -77,20 +77,23 @@ uint WorldGrid::getAt(uint _x, uint _y)
 void WorldGrid::update()
 {
     m_time.get()->tick();
-    for(auto &y : m_cells)
+    if(m_time.get()->GetTime() >= m_params.get()->time_saleStart)
     {
-        for(auto &x : y)
+        for(auto &y : m_cells)
         {
-            for(Agent* a : x->m_agentList)
+            for(auto &x : y)
             {
-                a->setCell(x->m_id);
-                a->update(x->m_agentList);
-                m_shop.get()->update();
+                for(Agent* a : x->m_agentList)
+                {
+                    a->setCell(x->m_id);
+                    a->update(x->m_agentList);
+                    m_shop.get()->update();
+                }
+                checkCollisionOnNode(x);
             }
-            checkCollisionOnNode(x);
         }
+        m_shop.get()->update();
     }
-    m_shop.get()->update();
 }
 
 void WorldGrid::addAgent(Agent *_a)
@@ -587,10 +590,10 @@ void WorldGrid::checkCollisionOnNode(GridCell* _cell)
 
 bool WorldGrid::insideRoom(Vec2 _pos)
 {
-    return (_pos.x < (float)m_roomLimit.m_maxx &&
-            _pos.x > (float)m_roomLimit.m_minx &&
-            _pos.y < (float)m_roomLimit.m_maxy &&
-            _pos.y > (float)m_roomLimit.m_miny
+    return (_pos.x < (float)m_roomLimit.m_maxx-1 &&
+            _pos.x > (float)m_roomLimit.m_minx+1 &&
+            _pos.y < (float)m_roomLimit.m_maxy-1 &&
+            _pos.y > (float)m_roomLimit.m_miny+1
             );
 }
 
@@ -630,15 +633,26 @@ void WorldGrid::AStarPathfind()
                 {
                     if(insideRoom(checkPos))
                     {
-                        std::vector<Vec2> easyV;
+                        /*std::vector<Vec2> easyV;
                         easyV.push_back(m_exits.at(e));
-                        m_exitPaths.at(y).at(x).at(e) = easyV;
+                        m_exitPaths.at(y).at(x).at(e) = easyV;*/
+                        m_exitPaths.at(y).at(x).at(e) =
+                                m_pfinder.get()->getPath(Vec2(x,y),
+                                                         Vec2(m_exits.at(e).x,m_exits.at(e).y),
+                                                         true,
+                                                         Vec2(m_roomDim,m_roomDim));
+
                     }
                     else
                     {
-                        std::vector<Vec2> easyV;
+                        /*std::vector<Vec2> easyV;
                         easyV.push_back(m_entrances.at(e));
-                        m_enterPaths.at(y).at(x).at(e) = easyV;
+                        m_enterPaths.at(y).at(x).at(e) = easyV;*/
+                        m_enterPaths.at(y).at(x).at(e) =
+                                m_pfinder.get()->getPath(Vec2(x,y),
+                                                         Vec2(m_entrances.at(e).x,m_entrances.at(e).y),
+                                                         false,
+                                                         Vec2(m_roomDim,m_roomDim));
                     }
                 }
             }

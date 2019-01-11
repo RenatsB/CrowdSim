@@ -20,6 +20,27 @@ Pathfinder::Pathfinder(Vec2 _gridDim, WorldGrid* _g)
         o.reserve(sizeX);
         o.resize(sizeX);
     }
+    open_nodes_map.reserve(sizeY);
+    open_nodes_map.resize(sizeY);
+    for(auto &o : open_nodes_map)
+    {
+        o.reserve(sizeX);
+        o.resize(sizeX);
+    }
+    closed_nodes_map.reserve(sizeY);
+    closed_nodes_map.resize(sizeY);
+    for(auto &o : closed_nodes_map)
+    {
+        o.reserve(sizeX);
+        o.resize(sizeX);
+    }
+    dir_map.reserve(sizeY);
+    dir_map.resize(sizeY);
+    for(auto &o : dir_map)
+    {
+        o.reserve(sizeX);
+        o.resize(sizeX);
+    }
     for(uint y=0; y<sizeY; ++y)
     {
         for(uint x=0; x<sizeX; ++x)
@@ -68,32 +89,76 @@ std::vector<Vec2> Pathfinder::getPath(Vec2 _start, Vec2 _finish, bool _isRoom, V
             }
         }
     }
-    //std::string route=PathFind(xS, yS, xF, yF);
-    retRoute = PathFind(_start, _finish);
+    std::string route=PathFind(_start, _finish);
 
     // follow the route on the map and display it
-    /*if(route.length()>0)
+    if(route.length()>0)
     {
         int j; char c;
-        int x=xS;
-        int y=yS;
+        int x=_start.x;
+        int y=_start.y;
         for(uint i=0;i<route.length();i++)
         {
             c=route.at(i);
             j=atoi(&c);
             x=x+dx[j];
             y=y+dy[j];
-            retRoute.push_back(y*sizeX+x);
-            if(retRoute.back() >= 42*42)
+            retRoute.push_back(Vec2(x,y));
+            if(retRoute.back().x >= sizeX-1 && retRoute.back().y >= sizeY-1)
                 retRoute.pop_back();
         }
 
-    }*/
-    //retRoute.push_back(yF*sizeX+xF);
+    }
+    retRoute.push_back(_finish);
     return retRoute;
 }
+/*
+std::vector<Vec2> Pathfinder::getPath(Vec2 _start, Vec2 _finish, bool _isRoom, Vec2 _rLim)
+{
+    for(uint y=0; y<sizeY; ++y)
+    {
+        for(uint x=0; x<sizeX; ++x)
+        {
+            //reset map to source
+            map.at(y).at(x) = sourceMap.at(y).at(x);
+        }
+    }
+    std::vector<Vec2> retRoute;
 
-std::vector<Vec2> Pathfinder::PathFind(Vec2 _start, Vec2 _finish)
+
+    if(_isRoom)
+    {
+        for(uint y = 0; y<sizeY; ++y)
+        {
+            for(uint x = 0; x<sizeX; ++x)
+            {
+                if(x < _rLim.x || y < _rLim.y || x>sizeX-_rLim.x || y>sizeY-_rLim.y)
+                {
+                    //set values outside the room to 1 (wall)
+                    map.at(y).at(x) = 1;
+                }
+            }
+        }
+    }
+    else
+    {
+        for(uint y = _rLim.y; y<sizeY-_rLim.y; ++y)
+        {
+            for(uint x = _rLim.x; x<sizeX-_rLim.x; ++x)
+            {
+                //set values inside the room to 1 (wall)
+                map.at(y).at(x) = 1;
+            }
+        }
+    }
+    retRoute = PathFind(_start, _finish);
+
+    retRoute.push_back(yF*sizeX+xF);
+    return retRoute;
+}
+*/
+
+/*std::vector<Vec2> Pathfinder::PathFind(Vec2 _start, Vec2 _finish)
 {
     //Returns a list of tuples as a path from the given start to the given end in the given maze
 
@@ -201,11 +266,10 @@ std::vector<Vec2> Pathfinder::PathFind(Vec2 _start, Vec2 _finish)
     }
     std::vector<Vec2> ret;
     return ret;
-}
+}*/
 
 
-/*std::string Pathfinder::PathFind(const uint & xStart, const uint & yStart,
-                                           const uint & xFinish, const uint & yFinish)
+std::string Pathfinder::PathFind(Vec2 _start, Vec2 _finish)
 {
     static std::priority_queue<node> pq[2]; // list of open (not-yet-tried) nodes
     static int pqi; // pq index
@@ -220,16 +284,16 @@ std::vector<Vec2> Pathfinder::PathFind(Vec2 _start, Vec2 _finish)
     {
         for(uint x=0;x<sizeX;x++)
         {
-            closed_nodes_map[y][x]=0;
-            open_nodes_map[y][x]=0;
+            closed_nodes_map.at(y).at(x)=0;
+            open_nodes_map.at(y).at(x)=0;
         }
     }
 
     // create the start node and push into list of open nodes
-    n0=new node(xStart, yStart, 0, 0);
-    n0->updatePriority(xFinish, yFinish);
+    n0=new node(_start.x, _start.y, 0, 0);
+    n0->updatePriority(_finish.x, _finish.y);
     pq[pqi].push(*n0);
-    open_nodes_map[y][x]=n0->getPriority(); // mark it on the open nodes map
+    open_nodes_map.at(y).at(x)=n0->getPriority(); // mark it on the open nodes map
 
     // A* search
     while(!pq[pqi].empty())
@@ -242,18 +306,18 @@ std::vector<Vec2> Pathfinder::PathFind(Vec2 _start, Vec2 _finish)
         x=n0->getxPos(); y=n0->getyPos();
 
         pq[pqi].pop(); // remove the node from the open list
-        open_nodes_map[y][x]=0;
+        open_nodes_map.at(y).at(x)=0;
         // mark it on the closed nodes map
-        closed_nodes_map[y][x]=1;
+        closed_nodes_map.at(y).at(x)=1;
 
         // quit searching when the goal state is reached
         //if((*n0).estimate(xFinish, yFinish) == 0)
-        if((uint)x==xFinish && (uint)y==yFinish)
+        if((uint)x==_finish.x && (uint)y==_finish.y)
         {
             // generate the path from finish to start
             // by following the directions
             std::string path="";
-            while(!((uint)x==xStart && (uint)y==yStart))
+            while(!((uint)x==_start.x && (uint)y==_start.y))
             {
                 j=dir_map[y][x];
                 c='0'+(j+4)%8; //4 was dir/2 and 8 was dir
@@ -281,22 +345,22 @@ std::vector<Vec2> Pathfinder::PathFind(Vec2 _start, Vec2 _finish)
                 m0=new node( xdx, ydy, n0->getLevel(),
                              n0->getPriority());
                 m0->nextLevel(i);
-                m0->updatePriority(xFinish, yFinish);
+                m0->updatePriority(_finish.x, _finish.y);
 
                 // if it is not in the open list then add into that
-                if(open_nodes_map[ydy][xdx]==0)
+                if(open_nodes_map.at(ydy).at(xdx)==0)
                 {
-                    open_nodes_map[ydy][xdx]=m0->getPriority();
+                    open_nodes_map.at(ydy).at(xdx)=m0->getPriority();
                     pq[pqi].push(*m0);
                     // mark its parent node direction
-                    dir_map[ydy][xdx]=(i+4)%8;
+                    dir_map.at(ydy).at(xdx)=(i+4)%8;
                 }
-                else if(open_nodes_map[ydy][xdx]>m0->getPriority())
+                else if((int)open_nodes_map.at(ydy).at(xdx)>m0->getPriority())
                 {
                     // update the priority info
-                    open_nodes_map[ydy][xdx]=m0->getPriority();
+                    open_nodes_map.at(ydy).at(xdx)=m0->getPriority();
                     // update the parent direction info
-                    dir_map[ydy][xdx]=(i+4)%8;
+                    dir_map.at(ydy).at(xdx)=(i+4)%8;
 
                     // replace the node
                     // by emptying one pq to the other one
@@ -326,4 +390,4 @@ std::vector<Vec2> Pathfinder::PathFind(Vec2 _start, Vec2 _finish)
         delete n0; // garbage collection
     }
     return ""; // no route found
-}*/
+}
