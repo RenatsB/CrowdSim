@@ -10,3 +10,4 @@ crowdDemo/Makefile
 crowdLib/lib*
 crowdDemo/CrowdDemo.pro.user*
 crowdDemo/BlackFriday
+build-*

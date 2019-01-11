@@ -1,34 +1,21 @@
 #include "Pathfinder.h"
 #include "WorldGrid.h"
+#include <algorithm>
 
-Pathfinder::Pathfinder(uint _sX, uint _sY, WorldGrid *_g)
+Pathfinder::Pathfinder(Vec2 _gridDim, WorldGrid* _g)
 {
-    sizeX=_sX;
-    sizeY=_sY;
+    sizeX=_gridDim.x;
+    sizeY=_gridDim.y;
+    sourceMap.reserve(sizeY);
+    sourceMap.resize(sizeY);
+    for(auto &o : sourceMap)
+    {
+        o.reserve(sizeX);
+        o.resize(sizeX);
+    }
     map.reserve(sizeY);
     map.resize(sizeY);
     for(auto &o : map)
-    {
-        o.reserve(sizeX);
-        o.resize(sizeX);
-    }
-    closed_nodes_map.reserve(sizeY);
-    closed_nodes_map.resize(sizeY);
-    for(auto &o : closed_nodes_map)
-    {
-        o.reserve(sizeX);
-        o.resize(sizeX);
-    }
-    open_nodes_map.reserve(sizeY);
-    open_nodes_map.resize(sizeY);
-    for(auto &o : open_nodes_map)
-    {
-        o.reserve(sizeX);
-        o.resize(sizeX);
-    }
-    dir_map.reserve(sizeY);
-    dir_map.resize(sizeY);
-    for(auto &o : dir_map)
     {
         o.reserve(sizeX);
         o.resize(sizeX);
@@ -37,19 +24,55 @@ Pathfinder::Pathfinder(uint _sX, uint _sY, WorldGrid *_g)
     {
         for(uint x=0; x<sizeX; ++x)
         {
-            map.at(y).at(x) = _g->getAt(y*sizeX+x);
+            sourceMap.at(y).at(x) = _g->getAt(x,y);
+            map.at(y).at(x) = _g->getAt(x,y);
         }
     }
 }
-std::vector<uint> Pathfinder::getPath(const uint &xS, const uint &yS,const uint &xF, const uint &yF)
-{
-    std::vector<uint> retRoute;
-    //retRoute.push_back(yS*sizeX+xS); //push start
 
-    std::string route=PathFind(xS, yS, xF, yF);
+std::vector<Vec2> Pathfinder::getPath(Vec2 _start, Vec2 _finish, bool _isRoom, Vec2 _rLim)
+{
+    for(uint y=0; y<sizeY; ++y)
+    {
+        for(uint x=0; x<sizeX; ++x)
+        {
+            //reset map to source
+            map.at(y).at(x) = sourceMap.at(y).at(x);
+        }
+    }
+    std::vector<Vec2> retRoute;
+
+
+    if(_isRoom)
+    {
+        for(uint y = 0; y<sizeY; ++y)
+        {
+            for(uint x = 0; x<sizeX; ++x)
+            {
+                if(x < _rLim.x || y < _rLim.y || x>sizeX-_rLim.x || y>sizeY-_rLim.y)
+                {
+                    //set values outside the room to 1 (wall)
+                    map.at(y).at(x) = 1;
+                }
+            }
+        }
+    }
+    else
+    {
+        for(uint y = _rLim.y; y<sizeY-_rLim.y; ++y)
+        {
+            for(uint x = _rLim.x; x<sizeX-_rLim.x; ++x)
+            {
+                //set values inside the room to 1 (wall)
+                map.at(y).at(x) = 1;
+            }
+        }
+    }
+    //std::string route=PathFind(xS, yS, xF, yF);
+    retRoute = PathFind(_start, _finish);
 
     // follow the route on the map and display it
-    if(route.length()>0)
+    /*if(route.length()>0)
     {
         int j; char c;
         int x=xS;
@@ -65,12 +88,123 @@ std::vector<uint> Pathfinder::getPath(const uint &xS, const uint &yS,const uint 
                 retRoute.pop_back();
         }
 
-    }
-    retRoute.push_back(yF*sizeX+xF);
+    }*/
+    //retRoute.push_back(yF*sizeX+xF);
     return retRoute;
 }
 
-std::string Pathfinder::PathFind(const uint & xStart, const uint & yStart,
+std::vector<Vec2> Pathfinder::PathFind(Vec2 _start, Vec2 _finish)
+{
+    //Returns a list of tuples as a path from the given start to the given end in the given maze
+
+    // Create start and end node
+    Node *start_node = new Node(nullptr, _start);
+    //start_node.g = start_node.h = start_node.f = 0;
+    Node *end_node = new Node(nullptr, _finish);
+    //end_node.g = end_node.h = end_node.f = 0
+
+    // Initialize both open and closed list
+    open_nodes_map.clear();
+    closed_nodes_map.clear();
+
+    // Add the start node
+    open_nodes_map.push_back(start_node);
+
+    // Loop until you find the end
+    while(open_nodes_map.size() > 0)
+    {
+
+        // Get the current node
+        Node *current_node = open_nodes_map.at(0);
+        uint current_index = 0;
+        for(uint index=0; index<open_nodes_map.size(); ++index)
+        {
+            if(open_nodes_map.at(index)->f < current_node->f)
+            {
+                current_node = open_nodes_map.at(index);
+                current_index = index;
+            }
+        }
+
+        // Pop current off open list, add to closed list
+        open_nodes_map.erase(open_nodes_map.begin()+current_index);
+        closed_nodes_map.push_back(current_node);
+
+        // Found the goal
+        if(current_node == end_node)
+        {
+            std::vector<Vec2> path;
+            Node* current = current_node;
+            while(current != nullptr)
+            {
+                path.push_back(current->pos);
+                current = current->parent;
+            }
+            std::reverse(path.begin(),path.end());
+            return path; // Return reversed path
+        }
+        m_dir=Direction::CURRENT;
+        // Generate children
+        std::vector<Node*> children;
+        int dirs[8][2] = {{0, -1}, {0, 1}, {-1, 0}, {1, 0}, {-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
+        for(auto new_position : dirs) // Adjacent squares
+        {
+            // Get node position
+            Vec2 node_position = Vec2(current_node->pos.x + new_position[0],current_node->pos.y + new_position[1]);
+
+            // Make sure within range
+            if(node_position.x > (int)sizeX - 1 || node_position.x < 0 || node_position.y > (int)sizeY - 1 || node_position.y < 0)
+            {
+                continue;
+            }
+
+            // Make sure walkable terrain
+            if(map.at(node_position.y).at(node_position.x) != 0)
+            {
+                continue;
+            }
+
+            // Create new node
+            Node* new_node = new Node(current_node, node_position);
+
+            // Append
+            children.push_back(new_node);
+        }
+        // Loop through children
+        for(auto child : children)
+        {
+            // Child is on the closed list
+            for(auto closed_child : closed_nodes_map)
+            {
+                if(child == closed_child)
+                {
+                    continue;
+                }
+            }
+            // Create the f, g, and h values
+            child->g = current_node->g + 1;
+            child->h = ((child->pos.x - end_node->pos.x) * (child->pos.x - end_node->pos.x))
+                     + ((child->pos.y - end_node->pos.y) * (child->pos.y - end_node->pos.y));
+            child->f = child->g + child->h;
+
+            // Child is already in the open list
+            for(auto open_node : open_nodes_map)
+            {
+                if(child == open_node && child->g > open_node->g)
+                {
+                    continue;
+                }
+            }
+            // Add the child to the open list
+            open_nodes_map.push_back(child);
+        }
+    }
+    std::vector<Vec2> ret;
+    return ret;
+}
+
+
+/*std::string Pathfinder::PathFind(const uint & xStart, const uint & yStart,
                                            const uint & xFinish, const uint & yFinish)
 {
     static std::priority_queue<node> pq[2]; // list of open (not-yet-tried) nodes
@@ -192,4 +326,4 @@ std::string Pathfinder::PathFind(const uint & xStart, const uint & yStart,
         delete n0; // garbage collection
     }
     return ""; // no route found
-}
+}*/

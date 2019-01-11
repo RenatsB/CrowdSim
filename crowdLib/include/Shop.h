@@ -6,15 +6,18 @@
 #include "Params.h"
 
 class RandF;
+class WorldGrid;
 
 class BoundingBox;
 
 class Shop: private Object
 {
 public:
-    Shop(std::shared_ptr<Params> _prms):
+    Shop(std::shared_ptr<Params> _prms, WorldGrid* _g):
         m_params(_prms)
-    {}
+    {
+        m_grid = _g;
+    }
     ~Shop()=default;
     std::vector<std::shared_ptr<Product>> getRemainingProducts() const;
     std::vector<std::shared_ptr<Product>> getfreeProducts() const;
@@ -33,5 +36,6 @@ private:
     std::vector<Vec2> m_exits;
     std::shared_ptr<Params> m_params;
     std::shared_ptr<RandF> m_randF;
+    WorldGrid* m_grid;
 };
 #endif //CROWDLIB_SHOP_H_

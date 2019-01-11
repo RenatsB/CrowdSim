@@ -33,7 +33,7 @@ public:
     Vec2 m_position = Vec2(0.f,0.f);
     std::vector<Agent *> m_agentList;
     uint m_value = 0;
-    uint m_id =0;
+    Vec2 m_id = Vec2(0.f,0.f);
 };
 
 class WorldGrid
@@ -44,11 +44,10 @@ public:
     /// @brief destructor
     ~WorldGrid();
 
-    uint getAt(Vec2 _cell);
-    uint getAt(uint _cell);
     GridCell* cellAt(Vec2 _cell);
     GridCell* cellAt(uint _x, uint _y);
-    GridCell* cellAt(uint _i);
+    uint getAt(Vec2 _cell);
+    uint getAt(uint _x, uint _y);
     float getCellDim() const;
     void update();
     std::vector<Agent*> getAgents();
@@ -56,10 +55,8 @@ public:
     std::vector<Vec2> getProducts();
     void addAgent(Agent *_a);
     void addAgent(Agent *_a, GridCell* _cell);
-    uint randomToExit(uint _current) const;
-    std::vector<uint> randPathToExit(uint _current) const;
-    uint randomToEntrance(uint _current) const;
-    std::vector<uint> randPathToEntrance(uint _current) const;
+    std::vector<Vec2> randPathToExit(Vec2 _current) const;
+    std::vector<Vec2> randPathToEntrance(Vec2 _current) const;
     bool insideRoom(Vec2 _pos);
     Vec2 getGridMidpoint();
     float getKillRadius();
@@ -69,8 +66,8 @@ private:
     void spawnAgents();
     void calcPaths();
     void AStarPathfind();
-    std::vector<std::vector<std::vector<uint>>> StarComputePaths(bool _type);
-    std::vector<std::vector<uint>> PathTrace(uint _x, uint _y, Vec2 _e);
+    //std::vector<std::vector<std::vector<uint>>> StarComputePaths(bool _type);
+    //std::vector<std::vector<uint>> PathTrace(uint _x, uint _y, Vec2 _e);
     void setAt(Vec2 _cell, uint _v);
     void setAt(uint _x, uint _y, uint _v);
     void checkBB();
@@ -88,19 +85,20 @@ private:
     uint m_cellDimY = 1;
     uint m_gridSizeX = 1;
     uint m_gridSizeY = 1;
+    uint m_roomDim = 1;
     float m_navPTDistance = 0.25f;
     float m_killRadius;
     Vec2 m_midPoint;
     BoundingBox m_limit;
     BoundingBox m_roomLimit;
-    std::vector<GridCell*> m_cells;
+    std::vector<std::vector<GridCell*>> m_cells;
     std::vector<Vec2> m_exits;
     std::vector<Vec2> m_entrances;
     std::vector<GridCell*> m_walls;
     //these 2 paths will take most of the space, so store and calculate them here
     //path are stored for each cell
-    std::vector<std::vector<std::vector<uint>>> m_exitPaths;
-    std::vector<std::vector<std::vector<uint>>> m_enterPaths;
+    std::vector<std::vector<std::vector<std::vector<Vec2>>>> m_exitPaths;
+    std::vector<std::vector<std::vector<std::vector<Vec2>>>> m_enterPaths;
     std::shared_ptr<NameMaker> m_nmaker;
     std::shared_ptr<Pathfinder> m_pfinder;
 };

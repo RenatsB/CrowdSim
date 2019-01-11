@@ -42,7 +42,7 @@ void Agent::update(std::vector<Agent*> _neighbours)
             case AgentState::GIVEUP : {flee();break;}
             case AgentState::BUY : {buy();break;}
             case AgentState::FAILED : {fail();break;}
-            case AgentState::SUCCESS : {wait();break;}
+            case AgentState::SUCCESS : {succeed();break;}
             default : {makeDecision();break;}
             }
         }
@@ -52,6 +52,7 @@ void Agent::update(std::vector<Agent*> _neighbours)
 void Agent::takeProduct(std::shared_ptr<Product> _tgt)
 {
     _tgt.get()->setOwner(this);
+    m_grabOffset = Vec2(_tgt.get()->getPosition()-m_pos);
 }
 
 void Agent::makeDecision()
@@ -122,6 +123,7 @@ void Agent::getHit(float _power)
 void Agent::receiveFail()
 {
     m_state = AgentState::FAILED;
+    m_navPath.clear();
 }
 
 void Agent::fail()
@@ -140,6 +142,12 @@ void Agent::fail()
     }
 }
 
+void Agent::succeed()
+{
+    navigate(MoveType::OUT);
+    m_tgt.get()->setPosition(m_pos+m_grabOffset);
+}
+
 void Agent::buy()
 {
     if(m_grid->insideRoom(m_pos))
@@ -149,19 +157,22 @@ void Agent::buy()
             pickRandomPtoExit();
         }
         navigate(MoveType::PATH);
+        if(m_tgt != nullptr && m_tgt.get()->getOwner() == this)
+        {
+            m_tgt.get()->setPosition(m_pos+m_grabOffset);
+        }
+        else
+        {
+            m_state = AgentState::FOLLOW;
+        }
     }
     else
     {
+        m_state = AgentState::SUCCESS;
         navigate(MoveType::OUT);
+        m_tgt.get()->setPosition(m_pos+m_grabOffset);
     }
-    if(m_tgt != nullptr && m_tgt.get()->getOwner() == this)
-    {
-        m_tgt.get()->addPosition(m_lookVector*m_speed*m_Time.get()->DeltaTime());
-    }
-    else
-    {
-        m_state = AgentState::FOLLOW;
-    }
+
 }
 
 void Agent::wait()
@@ -314,6 +325,12 @@ void Agent::follow()
         if(m_grid->insideRoom(m_pos))
         {
             navigate(MoveType::TARGET);
+            if(m_pos.distance(m_tgt.get()->getPosition()) <= m_influenceRadius*1.1f)
+            {
+                m_state = AgentState::BUY;
+                takeProduct(m_tgt);
+                pickRandomPtoExit();
+            }
         }
         else
         {
@@ -335,17 +352,24 @@ void Agent::navigate(MoveType _m)
     {
         if(!m_navPath.empty())
         {
-            if(m_pos.distance(m_navPoint)<=m_grid->getCellDim())
+            if(m_navPoint==m_navPath.at(0))
             {
-                if(!m_navPath.empty())
+                if(m_pos.distance(m_navPoint)<=m_grid->getCellDim())
                 {
-                    m_navPoint = m_grid->cellAt(m_navPath.front())->m_position;
-                    m_navPath.erase(m_navPath.begin());
+                    if(m_navPath.size()<2)
+                    {
+                        m_navPath.clear();
+                    }
+                    else
+                    {
+                        m_navPoint = m_grid->cellAt(m_navPath.front())->m_position;
+                        m_navPath.erase(m_navPath.begin());
+                    }
                 }
-                else
-                {
-                    m_lookVector = m_tgt.get()->getPosition() - m_pos;
-                }
+            }
+            else
+            {
+                m_navPoint = m_grid->cellAt(m_navPath.front())->m_position;
             }
         }
         m_lookVector = m_navPoint - m_pos;
@@ -401,6 +425,17 @@ void Agent::navigate(MoveType _m)
     }
     case AgentState::GIVEUP :
     {
+        std::cout<<m_name<<" has given up"<<std::endl;
+        break;
+    }
+    case AgentState::BUY :
+    {
+        std::cout<<m_name<<" is buying"<<std::endl;
+        break;
+    }
+    case AgentState::SUCCESS :
+    {
+        std::cout<<m_name<<" is succeeding"<<std::endl;
         break;
     }
     default : {break;}
@@ -520,25 +555,13 @@ void Agent::pickRandomPtoEntrance()
     m_navPath = m_grid->randPathToEntrance(m_cellID);
 }
 
-void Agent::pickRandomCellToExit()
-{
-    m_navPath.clear();
-    m_navPath.push_back(m_grid->randomToExit(m_cellID));
-}
-
-void Agent::pickRandomCellToEntrance()
-{
-    m_navPath.clear();
-    m_navPath.push_back(m_grid->randomToEntrance(m_cellID));
-}
-
 void Agent::setDrag(float _x, float _y)
 {
     m_drag.x = _x;
     m_drag.y = _y;
 }
 
-void Agent::setCell(uint _id)
+void Agent::setCell(Vec2 _id)
 {
     m_cellID = _id;
 }

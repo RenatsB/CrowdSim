@@ -19,7 +19,10 @@ void Shop::spawnProducts(BoundingBox _bb)
 void Shop::setExits(std::vector<Vec2> _ex)
 {
     m_exits.clear();
-    m_exits = _ex;
+    for(auto i : _ex)
+    {
+        m_exits.push_back(m_grid->cellAt(i)->m_position);
+    }
 }
 
 std::vector<Vec2> Shop::getExits() const

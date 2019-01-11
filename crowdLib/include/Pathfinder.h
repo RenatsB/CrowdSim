@@ -8,9 +8,64 @@
 #include <ctime>
 #include <vector>
 #include <memory>
-//below code was adapted from : http://code.activestate.com/recipes/577457-a-star-shortest-path-algorithm/
+#include "EnumClasses.h"
+#include "Vec2.h"
 class RandF;
 
+class Node
+{
+public:
+Node(Node* _p, Vec2 _pos)
+{
+    parent = _p;
+    pos.x=_pos.x;
+    pos.y=_pos.y;
+}
+
+Node* parent;
+Vec2 pos;
+
+int g = 0;
+int h = 0;
+int f = 0;
+bool operator==(const Node& rhs){if(this->pos.x==rhs.pos.x && this->pos.y==rhs.pos.y){return true;}else{return false;}}
+};
+
+class WorldGrid;
+
+class Pathfinder
+{
+public:
+Pathfinder(Vec2 _gridDim, WorldGrid* _g);
+~Pathfinder()=default;
+
+//adaptation of the output of original function
+std::vector<Vec2> getPath(Vec2 _start, Vec2 _finish, bool _isRoom, Vec2 _rLim);
+private:
+// A-star algorithm.
+// The route returned is a string of direction digits.
+std::vector<Vec2> PathFind(Vec2 _start, Vec2 _finish);
+
+private:
+std::shared_ptr<RandF> m_randF;
+
+uint sizeX=60; // horizontal size of the map
+uint sizeY=60; // vertical size size of the map
+std::vector<std::vector<uint>> sourceMap;
+std::vector<std::vector<uint>> map;
+std::vector<Node*> closed_nodes_map; // map of closed (tried-out) nodes
+std::vector<Node*> open_nodes_map; // map of open (not-yet-tried) nodes
+Direction m_dir = Direction::CURRENT;
+};
+
+#endif //CROWDLIB_PATHFINDER_H_
+
+
+/*
+BACKUP CODE
+//below code was adapted from : http://code.activestate.com/recipes/577457-a-star-shortest-path-algorithm/
+
+//class Vec2;
 class node
 {
 // current position
@@ -61,27 +116,17 @@ public:
     }
 };
 
+
+//int dx[8]={1, 1, 0, -1, -1, -1, 0, 1};
+//int dy[8]={0, 1, 1, 1, 0, -1, -1, -1};
+
+//std::array<std::pair<uint,uint>> m_dir={{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1},{0,-1},{1,-1}};
 // Determine priority (in the priority queue)
 inline bool operator<(const node & a, const node & b)
 {
   return a.getPriority() > b.getPriority();
 }
-class WorldGrid;
 
-class Pathfinder
-{
-public:
-Pathfinder(uint _sX, uint _sY, WorldGrid* _g);
-~Pathfinder()=default;
-
-//adaptation of the output of original function
-std::vector<uint> getPath(const uint &xS, const uint &yS,
-                          const uint &xF, const uint &yF);
-private:
-// A-star algorithm.
-// The route returned is a string of direction digits.
-std::string PathFind(const uint & xStart, const uint & yStart,
-                     const uint & xFinish, const uint & yFinish);
 private:
 std::shared_ptr<RandF> m_randF;
 int dx[8]={1, 1, 0, -1, -1, -1, 0, 1};
@@ -93,6 +138,4 @@ std::vector<std::vector<int>> map;
 std::vector<std::vector<int>> closed_nodes_map; // map of closed (tried-out) nodes
 std::vector<std::vector<int>> open_nodes_map; // map of open (not-yet-tried) nodes
 std::vector<std::vector<int>> dir_map; // map of directions
-};
-
-#endif //CROWDLIB_PATHFINDER_H_
+*/

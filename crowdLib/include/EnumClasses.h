@@ -33,10 +33,15 @@ enum class Tag
 };
 enum class Direction
 {
+    CURRENT,
     N,
+    NE,
     E,
+    SE,
     S,
-    W
+    SW,
+    W,
+    NW
 };
 
 #endif //CROWDLIB_ENUMCLASSES_H_
