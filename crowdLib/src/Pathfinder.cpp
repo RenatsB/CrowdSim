@@ -62,7 +62,7 @@ std::vector<Vec2> Pathfinder::getPath(Vec2 _start, Vec2 _finish, bool _isRoom, V
         }
     }
     std::vector<Vec2> retRoute;
-
+    //retRoute.push_back(_start);
 
     if(_isRoom)
     {

@@ -188,7 +188,7 @@ void Agent::punch()
 {
     if(m_attackTgt != nullptr)
     {
-        if(m_pos.distance(m_attackTgt->getPosition()) <= m_influenceRadius*2.f)
+        if(m_pos.distance(m_attackTgt->getPosition()) <= m_influenceRadius*3.f)
         {
             if(m_Params->punch_powerDraw <= m_power)
             {
@@ -324,7 +324,7 @@ void Agent::follow()
         if(m_grid->insideRoom(m_pos))
         {
             navigate(MoveType::TARGET);
-            if(m_pos.distance(m_tgt.get()->getPosition()) <= m_influenceRadius*1.1f)
+            if(m_pos.distance(m_tgt.get()->getPosition()) <= m_influenceRadius*1.5f)
             {
                 changeState(AgentState::BUY);
                 takeProduct(m_tgt);
@@ -336,6 +336,10 @@ void Agent::follow()
             if(m_navPath.empty())
             {
                 pickRandomPtoEntrance();
+                if(m_navPath.empty() || m_navPath.size() == 1)
+                {
+                    navigate(MoveType::TARGET);
+                }
             }
             navigate(MoveType::PATH);
         }
@@ -353,7 +357,7 @@ void Agent::navigate(MoveType _m)
         {
             if(m_navPoint==m_navPath.at(0))
             {
-                if(m_pos.distance(m_navPoint)<=1.f)
+                if(m_pos.distance(m_navPoint)<=25.f*m_influenceRadius)
                 {
                     if(m_navPath.size()<2)
                     {
@@ -369,6 +373,13 @@ void Agent::navigate(MoveType _m)
             else
             {
                 m_navPoint = m_grid->cellAt(m_navPath.at(0))->m_position;
+            }
+        }
+        else
+        {
+            if(m_pos.distance(m_navPoint)<=5.f*m_influenceRadius)
+            {
+                m_state = AgentState::IDLE;
             }
         }
         m_lookVector = m_navPoint - m_pos;
@@ -391,7 +402,7 @@ void Agent::navigate(MoveType _m)
     }
     }
 
-    switch(m_state)
+    /*switch(m_state)
     {
     case AgentState::CHARGE :
     {
@@ -424,21 +435,21 @@ void Agent::navigate(MoveType _m)
     }
     case AgentState::GIVEUP :
     {
-        std::cout<<m_name<<" has given up"<<std::endl;
+        //std::cout<<m_name<<" has given up"<<std::endl;
         break;
     }
     case AgentState::BUY :
     {
-        std::cout<<m_name<<" is buying"<<std::endl;
+        //std::cout<<m_name<<" is buying"<<std::endl;
         break;
     }
     case AgentState::SUCCESS :
     {
-        std::cout<<m_name<<" is succeeding"<<std::endl;
+        //std::cout<<m_name<<" is succeeding"<<std::endl;
         break;
     }
     default : {break;}
-    }
+    }*/
     m_pos += m_drag;
     m_drag = Vec2(0.f,0.f);
     m_lookVector.normalize();
